@@ -1,0 +1,16 @@
+certifi==2018.11.29
+chardet==3.0.4
+decorator==4.3.2
+get==2018.11.19
+idna==2.8
+lxml==4.3.1
+memory-profiler==0.55.0
+post==2018.11.20
+psutil==5.5.0
+public==2018.11.20
+py==1.7.0
+PySocks==1.6.8
+query-string==2018.11.20
+retry==0.9.2
+you-get==0.4.1205
+youtube-dl==2019.2.8
