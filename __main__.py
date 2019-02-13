@@ -62,6 +62,8 @@ def monitors1(link):
     '''
    * Licensed same as jquery - MIT License
    * http://www.opensource.org/licenses/mit-license.php
+   * Copyright (c) 2012-2019 Mort Yao <mort.yao@gmail.com>
+   * Copyright (c) 2012 Boyu Guo <iambus@gmail.com>
     '''
     try:
         video_info = parse.parse_qs(getHtml(r'https://www.youtube.com/get_video_info?video_id={}'.format(vid)))
