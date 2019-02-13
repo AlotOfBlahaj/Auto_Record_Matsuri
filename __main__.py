@@ -48,9 +48,13 @@ def getLink():
     link = r"https://www.youtube.com/watch?v=" + vid
     return link
 
-
+# 应某超绝要求，此处应该有retry
+@retry()
 def downloader(link):
-    os.system(r"youtube-dl --proxy http://{} -o {}/%(title)s.%(ext)s {}".format(proxy, ddir, link))
+    try:
+        os.system(r"youtube-dl --proxy http://{} -o {}/%(title)s.%(ext)s {}".format(proxy, ddir, link))
+    except:
+        error()
     #main()
 
 @retry(delay=5)
