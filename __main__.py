@@ -1,83 +1,107 @@
-from you_get.extractors import *
-from you_get.extractors.youtube import YouTube
+from urllib import request
+from urllib import parse
+import json
+import re
+import os
+import time
+from retry import retry
 
-
-url = "https://www.youtube.com/channel/UCKMYISTJAQ8xTplUPHiABlA/videos"
+url = "https://www.youtube.com/channel/UCQ0UDLQCjY0rmuxCDE38FGg/videos"
 # 代理地址，应使用http代理
 proxy = '127.0.0.1:10800'
 # 保存位置
 ddir = 'D:/matsuri'
-set_socks_proxy(proxy)
 
+
+@retry(delay=5)
 def getHtml(url):
+    proxy_support = request.ProxyHandler({'http': '%s' % proxy, 'https': '%s' % proxy})
+    opener = request.build_opener(proxy_support)
+    request.install_opener(opener)
     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
                  'Chrome/71.0.3578.53 Safari/537.36'
-    headers = {'User-Agent': user_agent}
-    req = urllib.request.Request(url, headers=headers)
-    response = urllib.request.urlopen(req)
+    req = request.Request(url, headers={'User-Agent': user_agent})
+    try:
+        response = request.urlopen(req)
+    except:
+        error()
     html = response.read()
-    html = html.decode('utf-8')
+    html = html.decode('utf-8', 'ignore')
     # 防止网络问题导致抓取错误
-    if html == None:
-        getHtml(url)
-    else:
+    if html:
         return html
+    else:
+        return getHtml(url)
 
-
-def getLink(html):
-    global urllist
+@retry(delay=5)
+def getvideo_id(html):
+    global vid
     reg = r"watch\?v=([A-Za-z0-9_-]{11})"
-    urlre = re.compile(reg)
-    urllist = re.findall(urlre, html)
-    link = r"https://www.youtube.com/watch?v=" + urllist[0]
+    idre = re.compile(reg)
+    try:
+        vid = re.search(idre, html).group(1)
+    except:
+        error()
+
+
+def getLink():
+    link = r"https://www.youtube.com/watch?v=" + vid
     return link
 
 
 def downloader(link):
     os.system(r"youtube-dl --proxy http://{} -o {}/%(title)s.%(ext)s {}".format(proxy, ddir, link))
-    monitors1(getLink(getHtml(url)))
+    #main()
 
-
+@retry(delay=5)
 def monitors1(link):
     '''
    * Licensed same as jquery - MIT License
    * http://www.opensource.org/licenses/mit-license.php
     '''
-
-    vid = urllist[0]
     try:
-        video_info = parse.parse_qs(get_content(r'https://www.youtube.com/get_video_info?video_id={}'.format(vid)))
+        video_info = parse.parse_qs(getHtml(r'https://www.youtube.com/get_video_info?video_id={}'.format(vid)))
     except:
-        log.w("Network is disconnected retrying")
-        time.sleep(5)
-        monitors1(link)
-
+        error()
     ytplayer_config = None
     if video_info['status'] == ['ok']:
         if 'use_cipher_signature' not in video_info or video_info['use_cipher_signature'] == ['False']:
-            YouTube.title = parse.unquote_plus(video_info['title'][0])
             # Parse video page (for DASH)
-            video_page = get_content('https://www.youtube.com/watch?v=%s' % vid)
+            try:
+                video_page = getHtml('https://www.youtube.com/watch?v=%s' % vid)
+            except:
+                error()
             try:
                 ytplayer_config = json.loads(re.search(r'ytplayer.config\s*=\s*([^\n]+?});', video_page).group(1))
-                YouTube.html5player = 'https://www.youtube.com' + ytplayer_config['assets']['js']
                 # Workaround: get_video_info returns bad s. Why?
             except:
-                YouTube.html5player = None
+                error()
         else:
             # Parse video page instead
-            video_page = get_content('https://www.youtube.com/watch?v=%s' % vid)
+            try:
+                video_page = getHtml('https://www.youtube.com/watch?v=%s' % vid)
+            except:
+                error()
             ytplayer_config = json.loads(re.search(r'ytplayer.config\s*=\s*([^\n]+?});', video_page).group(1))
-            YouTube.title = ytplayer_config['args']['title']
-            YouTube.html5player = 'https://www.youtube.com' + ytplayer_config['assets']['js']
+
     # 判断是否正在直播
     if ytplayer_config and (ytplayer_config['args'].get('livestream') == '1'):
         downloader(link)
     else:
-        log.i('Now is not streaming')
+        print('Now is not streaming')
         time.sleep(15)
-        monitors1(getLink(getHtml(url)))
+        #main()
 
 
+def main():
+    getvideo_id(getHtml(url))
+    monitors1(getLink())
 
-monitors1(getLink(getHtml(url)))
+
+def error():
+    print("Something Wrong Retrying")
+    raise ValueError
+
+if __name__ == '__main__':
+    while True:
+        main()
