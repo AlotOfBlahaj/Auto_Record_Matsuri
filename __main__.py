@@ -1,7 +1,5 @@
 from urllib import request
-from urllib import parse
 import json
-import re
 import os
 import time
 from retry import retry
@@ -11,7 +9,12 @@ url = "https://www.youtube.com/channel/UCQ0UDLQCjY0rmuxCDE38FGg/videos"
 proxy = '127.0.0.1:10800'
 # 保存位置
 ddir = 'D:/matsuri'
-
+# YoutubeAPI3Key 申请地址：https://console.developers.google.com/apis/library/youtube.googleapis.com?q=Youtube&id=125bab65-cfb6-4f25-9826-4dcc309bc508&project=youtube-streaming-231512
+ApiKey = ''
+# 监测频道ID
+ChannelID = 'UCQ0UDLQCjY0rmuxCDE38FGg'
+# 检测间隔时间（s）
+sec = 15
 
 @retry(delay=5)
 def getHtml(url):
@@ -33,20 +36,6 @@ def getHtml(url):
     else:
         return getHtml(url)
 
-@retry(delay=5)
-def getvideo_id(html):
-    global vid
-    reg = r"watch\?v=([A-Za-z0-9_-]{11})"
-    idre = re.compile(reg)
-    try:
-        vid = re.search(idre, html).group(1)
-    except:
-        error()
-
-
-def getLink():
-    link = r"https://www.youtube.com/watch?v=" + vid
-    return link
 
 # 应某超绝要求，此处应该有retry
 @retry()
@@ -55,57 +44,47 @@ def downloader(link):
         os.system(r"youtube-dl --proxy http://{} -o {}/%(title)s.%(ext)s {}".format(proxy, ddir, link))
     except:
         error()
-    #main()
 
-@retry(delay=5)
-def monitors1(link):
-    '''
-   * Licensed same as jquery - MIT License
-   * http://www.opensource.org/licenses/mit-license.php
-   * Copyright (c) 2012-2019 Mort Yao <mort.yao@gmail.com>
-   * Copyright (c) 2012 Boyu Guo <iambus@gmail.com>
-    '''
-    try:
-        video_info = parse.parse_qs(getHtml(r'https://www.youtube.com/get_video_info?video_id={}'.format(vid)))
-    except:
-        error()
-    ytplayer_config = None
-    if video_info['status'] == ['ok']:
-        if 'use_cipher_signature' not in video_info or video_info['use_cipher_signature'] == ['False']:
-            # Parse video page (for DASH)
-            try:
-                video_page = getHtml('https://www.youtube.com/watch?v=%s' % vid)
-            except:
-                error()
-            try:
-                ytplayer_config = json.loads(re.search(r'ytplayer.config\s*=\s*([^\n]+?});', video_page).group(1))
-                # Workaround: get_video_info returns bad s. Why?
-            except:
-                error()
+
+def GetVedioIDByChannelID(ChannelID):
+    Channel_Info = json.loads(getHtml(r'https://www.googleapis.com/youtube/v3/search?key={}&channelId={}'
+                                      r'&part=snippet,id&order=date&maxResults=5'.format(ApiKey, ChannelID)))
+    if Channel_Info['items']:
+        vid = []
+        item = Channel_Info['items']
+        for x in item:
+            vid.append(x['id']['videoId'])
+        return vid
+
+
+def GetLive_info(vid):
+    for x in vid:
+        live_info = json.loads(getHtml(r'https://www.googleapis.com/youtube/v3/videos?id={}&key={}&'
+                                       r'part=liveStreamingDetails,snippet'.format(x, ApiKey)))
+        if live_info['pageInfo']['totalResults'] != 1:
+            error()
+        # JSON中的数组将被转换为列表
+        item = live_info['items'][0]
+        snippet = item['snippet']
+        info_dict = {'Title': snippet['title'],
+                     'Islive': snippet['liveBroadcastContent']}
+        if info_dict.get('Islive') == 'live':
+            vid = vid[vid.index(x)]
+            link = r"https://www.youtube.com/watch?v=" + vid
+            downloader(link)
         else:
-            # Parse video page instead
-            try:
-                video_page = getHtml('https://www.youtube.com/watch?v=%s' % vid)
-            except:
-                error()
-            ytplayer_config = json.loads(re.search(r'ytplayer.config\s*=\s*([^\n]+?});', video_page).group(1))
-
-    # 判断是否正在直播
-    if ytplayer_config and (ytplayer_config['args'].get('livestream') == '1'):
-        downloader(link)
-    else:
-        print('Now is not streaming')
-        time.sleep(15)
-        #main()
+            print(time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                  '{} is not living now or not a live video'.format(info_dict['Title'], info_dict['Title']))
 
 
 def main():
-    getvideo_id(getHtml(url))
-    monitors1(getLink())
-
+    GetLive_info(GetVedioIDByChannelID(ChannelID))
+    print('Now Channel is not streaming, program will sleep {}s to retry'.format(sec))
+    time.sleep(sec)
 
 def error():
-    print("Something Wrong Retrying")
+    print("Something Wrong")
+    #此处raise一个错误使得能够retry
     raise ValueError
 
 if __name__ == '__main__':
