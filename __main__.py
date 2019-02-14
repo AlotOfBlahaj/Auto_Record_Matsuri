@@ -46,28 +46,33 @@ def downloader(link):
         error()
 
 
+# 关于SearchAPI的文档 https://developers.google.com/youtube/v3/docs/search/list
 def GetVedioIDByChannelID(ChannelID):
     Channel_Info = json.loads(getHtml(r'https://www.googleapis.com/youtube/v3/search?key={}&channelId={}'
                                       r'&part=snippet,id&order=date&maxResults=5'.format(ApiKey, ChannelID)))
+    # 判断获取的数据是否正确
     if Channel_Info['items']:
         vid = []
         item = Channel_Info['items']
         for x in item:
             vid.append(x['id']['videoId'])
         return vid
+    error()
 
 
 def GetLive_info(vid):
     for x in vid:
         live_info = json.loads(getHtml(r'https://www.googleapis.com/youtube/v3/videos?id={}&key={}&'
                                        r'part=liveStreamingDetails,snippet'.format(x, ApiKey)))
+        # 判断视频是否正确
         if live_info['pageInfo']['totalResults'] != 1:
             error()
-        # JSON中的数组将被转换为列表
+        # JSON中的数组将被转换为列表，此处使用[0]获得其中的数据
         item = live_info['items'][0]
         snippet = item['snippet']
         info_dict = {'Title': snippet['title'],
                      'Islive': snippet['liveBroadcastContent']}
+        # 判断是否正在直播
         if info_dict.get('Islive') == 'live':
             vid = vid[vid.index(x)]
             link = r"https://www.youtube.com/watch?v=" + vid
