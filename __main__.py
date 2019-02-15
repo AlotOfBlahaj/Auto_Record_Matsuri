@@ -10,7 +10,7 @@ ddir = 'D:/matsuri'
 # YoutubeAPI3Key 申请地址：https://console.developers.google.com/apis/library/youtube.googleapis.com?q=Youtube&id=125bab65-cfb6-4f25-9826-4dcc309bc508&project=youtube-streaming-231512
 ApiKey = ''
 # 监测频道ID
-ChannelID = 'UChqYnJlFxlBi6DfRz6jRenQ'
+ChannelID = 'UCQ0UDLQCjY0rmuxCDE38FGg'
 # 检测间隔时间（s）
 sec = 30
 # 无预定时间隔时间（s）
