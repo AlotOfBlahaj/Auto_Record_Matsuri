@@ -13,6 +13,8 @@ ApiKey = ''
 ChannelID = 'UCQ0UDLQCjY0rmuxCDE38FGg'
 # 检测间隔时间（s）
 sec = 30
+# 无预定时间隔时间（s）
+sec1 = 120
 
 
 def gethtml(url):
@@ -51,7 +53,7 @@ class Check(object):
         while True:
             try:
                 self.live_check_timer()
-                time.sleep(sec)
+                time.sleep(sec1)
             except:
                 print('Something wrong. Retrying')
                 time.sleep(5)
@@ -83,14 +85,13 @@ class Check(object):
             info_dict = {'Title': snippet['title'],
                          'Islive': snippet['liveBroadcastContent']}
             if info_dict.get('Islive') == 'live':
-                vid1 = vid1.append(vid[vid.index(x)])
-                return vid1
+                vid1.append(vid[vid.index(x)])
             elif info_dict.get('Islive') == 'upcoming':
-                vid1 = vid1.append(vid[vid.index(x)])
-                return vid1
+                vid1.append(vid[vid.index(x)])
             else:
                 print(time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                       '{} is not a live video'.format(info_dict['Title']))
+        return vid1
 
     def getlive_info_by_caches(self):
         vid = self.caches_livestatus['Upcoming']
@@ -108,8 +109,7 @@ class Check(object):
                     return vid[vid.index(x)]
                 elif info_dict.get('Islive') == 'none':
                     break
-            else:
-                break
+            time.sleep(sec)
 
     def live_check_timer(self):
         if not self.caches_livestatus['Upcoming']:
