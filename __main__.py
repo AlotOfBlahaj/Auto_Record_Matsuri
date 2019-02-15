@@ -10,7 +10,7 @@ ddir = 'D:/matsuri'
 # YoutubeAPI3Key 申请地址：https://console.developers.google.com/apis/library/youtube.googleapis.com?q=Youtube&id=125bab65-cfb6-4f25-9826-4dcc309bc508&project=youtube-streaming-231512
 ApiKey = ''
 # 监测频道ID
-ChannelID = 'UCQ0UDLQCjY0rmuxCDE38FGg'
+ChannelID = 'UChqYnJlFxlBi6DfRz6jRenQ'
 # 检测间隔时间（s）
 sec = 30
 # 无预定时间隔时间（s）
@@ -116,9 +116,9 @@ class Check(object):
             if 'LIVE NOW' in self.html:
                 vid = self.getlive_info()
                 for x in vid:
-                    if vid[0] in self.caches_livestatus['Upcoming']:
-                        del self.caches_livestatus['Upcoming'][self.caches_livestatus['Upcoming'].index(vid[0])]
-                    downloader(r"https://www.youtube.com/watch?v=" + vid[0])
+                    if x in self.caches_livestatus['Upcoming']:
+                        del self.caches_livestatus['Upcoming'][self.caches_livestatus['Upcoming'].index(x)]
+                    downloader(r"https://www.youtube.com/watch?v=" + x)
             elif 'Upcoming live streams' in self.html:
                 vid = self.getlive_info()
                 for x in vid:
