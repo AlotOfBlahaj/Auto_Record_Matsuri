@@ -70,6 +70,7 @@ class Check(object):
 
     def getlive_info(self):
         vid = self.get_videoid_by_channelid()
+        vid1 = []
         for x in vid:
             live_info = json.loads(gethtml(r'https://www.googleapis.com/youtube/v3/videos?id={}&key={}&'
                                            r'part=liveStreamingDetails,snippet'.format(x, ApiKey)))
@@ -82,9 +83,11 @@ class Check(object):
             info_dict = {'Title': snippet['title'],
                          'Islive': snippet['liveBroadcastContent']}
             if info_dict.get('Islive') == 'live':
-                return vid[vid.index(x)]
+                vid1 = vid1.append(vid[vid.index(x)])
+                return vid1
             elif info_dict.get('Islive') == 'upcoming':
-                return vid[vid.index(x)]
+                vid1 = vid1.append(vid[vid.index(x)])
+                return vid1
             else:
                 print(time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                       '{} is not a live video'.format(info_dict['Title']))
@@ -112,17 +115,18 @@ class Check(object):
         if not self.caches_livestatus['Upcoming']:
             if 'LIVE NOW' in self.html:
                 vid = self.getlive_info()
-                if vid in self.caches_livestatus['Upcoming']:
-                    del self.caches_livestatus['Upcoming'][self.caches_livestatus['Upcoming'].index(vid)]
-                downloader(r"https://www.youtube.com/watch?v=" + vid)
+                if vid[0] in self.caches_livestatus['Upcoming']:
+                    del self.caches_livestatus['Upcoming'][self.caches_livestatus['Upcoming'].index(vid[0])]
+                downloader(r"https://www.youtube.com/watch?v=" + vid[0])
             elif 'Upcoming live streams' in self.html:
                 vid = self.getlive_info()
-                if vid not in self.caches_livestatus['Upcoming']:
-                    self.caches_livestatus['Upcoming'].append(vid)
-                self.getlive_info_by_caches()
-                self.caches_livestatus['Live'].append(vid)
-                downloader(r"https://www.youtube.com/watch?v=" + vid)
-                del self.caches_livestatus['Upcoming'][self.caches_livestatus['Upcoming'].index(vid)]
+                for x in vid:
+                    if vid not in self.caches_livestatus['Upcoming']:
+                        self.caches_livestatus['Upcoming'].append(x)
+                    self.getlive_info_by_caches()
+                    self.caches_livestatus['Live'].append(x)
+                    downloader(r"https://www.youtube.com/watch?v=" + x)
+                    del self.caches_livestatus['Upcoming'][self.caches_livestatus['Upcoming'].index(x)]
         else:
             raise IOError
 
