@@ -115,9 +115,10 @@ class Check(object):
         if not self.caches_livestatus['Upcoming']:
             if 'LIVE NOW' in self.html:
                 vid = self.getlive_info()
-                if vid[0] in self.caches_livestatus['Upcoming']:
-                    del self.caches_livestatus['Upcoming'][self.caches_livestatus['Upcoming'].index(vid[0])]
-                downloader(r"https://www.youtube.com/watch?v=" + vid[0])
+                for x in vid:
+                    if vid[0] in self.caches_livestatus['Upcoming']:
+                        del self.caches_livestatus['Upcoming'][self.caches_livestatus['Upcoming'].index(vid[0])]
+                    downloader(r"https://www.youtube.com/watch?v=" + vid[0])
             elif 'Upcoming live streams' in self.html:
                 vid = self.getlive_info()
                 for x in vid:
