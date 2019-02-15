@@ -59,10 +59,6 @@ class Check(object):
         self.caches_livestatus['Live'].append(link)
         downloader(link)
 
-    def upcoming_live(self):
-        if 'Upcoming live streams' in self.html:
-            return self.html
-
     # 关于SearchAPI的文档 https://developers.google.com/youtube/v3/docs/search/list
     def get_videoid_by_channelid(self):
         channel_info = json.loads(gethtml(r'https://www.googleapis.com/youtube/v3/search?key={}&channelId={}'
@@ -75,9 +71,11 @@ class Check(object):
                 vid.append(x['id']['videoId'])
             return vid
 
-    def getlive_info(self, vid):
+    def getlive_info(self):
         if self.caches_livestatus['Upcoming']:
             vid = self.caches_livestatus['Upcoming']
+        else:
+            vid = self.get_videoid_by_channelid()
         for x in vid:
             live_info = json.loads(gethtml(r'https://www.googleapis.com/youtube/v3/videos?id={}&key={}&'
                                            r'part=liveStreamingDetails,snippet'.format(x, ApiKey)))
@@ -100,16 +98,14 @@ class Check(object):
 
     def live_check_timer(self):
         if 'LIVE NOW' in self.html:
-            link = self.getlive_info(self.get_videoid_by_channelid())
+            link = self.getlive_info()
             if link in self.caches_livestatus['Upcoming']:
                 del self.caches_livestatus['Upcoming'][self.caches_livestatus['Upcoming'].index(link)]
             self.now_live(link)
         elif 'Upcoming live streams' in self.html:
-            link = self.getlive_info(self.get_videoid_by_channelid())
+            link = self.getlive_info()
             if link not in self.caches_livestatus['Upcoming']:
                 self.caches_livestatus['Upcoming'].append(link)
-        else:
-            raise IOError
 
 
 if __name__ == '__main__':
