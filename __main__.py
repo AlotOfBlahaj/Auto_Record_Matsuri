@@ -2,7 +2,7 @@ from urllib import request
 import json
 import os
 import time
-# TODO: 夜间停止监控
+
 # 代理地址，应使用http代理
 proxy = '127.0.0.1:10800'
 # 保存位置
@@ -12,7 +12,7 @@ ApiKey = ''
 # 监测频道ID
 ChannelID = 'UCQ0UDLQCjY0rmuxCDE38FGg'
 # 检测间隔时间（s）
-sec = 30
+sec = 120
 # 无预定时间隔时间（s）
 sec1 = 120
 
@@ -21,17 +21,19 @@ def gethtml(url):
     proxy_support = request.ProxyHandler({'http': '%s' % proxy, 'https': '%s' % proxy})
     opener = request.build_opener(proxy_support)
     request.install_opener(opener)
-    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
-                 'Chrome/71.0.3578.53 Safari/537.36'
-    req = request.Request(url, headers={'User-Agent': user_agent})
+    fake_headers = {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Charset': 'UTF-8,*;q=0.5',
+        'Accept-Encoding': 'gzip,deflate,sdch',
+        'Accept-Language': 'en-US,en;q=0.8',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101 Firefox/60.0',
+    }
+    req = request.Request(url, headers=fake_headers)
     response = request.urlopen(req)
     html = response.read()
     html = html.decode('utf-8', 'ignore')
     # 防止网络问题导致抓取错误
-    if html:
-        return html
-    else:
-        return gethtml(url)
+    return html
 
 
 def downloader(link):
@@ -43,7 +45,6 @@ def downloader(link):
 
 
 class Check(object):
-
     def __init__(self):
         # Caches
         self.caches_livestatus = {'Live': [], 'Upcoming': []}
@@ -58,10 +59,11 @@ class Check(object):
                 print('Something wrong. Retrying')
                 time.sleep(5)
 
+# TODO:添加提示文本
     # 关于SearchAPI的文档 https://developers.google.com/youtube/v3/docs/search/list
     def get_videoid_by_channelid(self):
         channel_info = json.loads(gethtml(r'https://www.googleapis.com/youtube/v3/search?key={}&channelId={}'
-                                          r'&part=snippet,id&order=date&maxResults=5'.format(ApiKey, self.ChannelID)))
+                                          r'&part=snippet,id&order=date&maxResults=3'.format(ApiKey, self.ChannelID)))
         # 判断获取的数据是否正确
         if channel_info['items']:
             vid = []
@@ -109,10 +111,11 @@ class Check(object):
                     return vid[vid.index(x)]
                 elif info_dict.get('Islive') == 'none':
                     break
+            print(time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                  '{} is not streaming now'.format(info_dict['Title']))
             time.sleep(sec)
 
     def live_check_timer(self):
-        if not self.caches_livestatus['Upcoming']:
             if 'LIVE NOW' in self.html:
                 vid = self.getlive_info()
                 for x in vid:
@@ -124,13 +127,10 @@ class Check(object):
                 for x in vid:
                     if vid not in self.caches_livestatus['Upcoming']:
                         self.caches_livestatus['Upcoming'].append(x)
-                    self.getlive_info_by_caches()
-                    self.caches_livestatus['Live'].append(x)
-                    downloader(r"https://www.youtube.com/watch?v=" + x)
+                    vid = self.getlive_info_by_caches()
+                    self.caches_livestatus['Live'].append(vid)
+                    downloader(r"https://www.youtube.com/watch?v=" + vid)
                     del self.caches_livestatus['Upcoming'][self.caches_livestatus['Upcoming'].index(x)]
-        else:
-            raise IOError
-
 
 
 if __name__ == '__main__':
