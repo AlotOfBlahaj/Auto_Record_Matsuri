@@ -10,5 +10,5 @@ ChannelID = 'UCQ0UDLQCjY0rmuxCDE38FGg'
 userid = '3264432'
 # 检测间隔时间（s）
 sec = 120
-# 无预定时间隔时间（s）
-sec_error = 120
+# 错误间隔时间（s）
+sec_error = 5

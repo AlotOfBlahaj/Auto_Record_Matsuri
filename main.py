@@ -2,27 +2,31 @@ import time
 from config import sec, sec_error
 from youtube import Youtube
 from mirrativ import Mirrativ
-import multiprocessing
+import asyncio
+
 
 class Localtimer(object):
 
-    def __init__(self):
-        while True:
-            try:
-                multiprocessing.Process(target=self.youtube_timer()).start()
-                multiprocessing.Process(target=self.mirrativ_timer()).start()
-            except:
-                time.sleep(sec_error)
-
-    def youtube_timer(self):
+    async def youtube_timer(self):
         y = Youtube()
         y.check()
-        time.sleep(sec)
+        await asyncio.sleep(sec)
 
-    def mirrativ_timer(self):
+    async def mirrativ_timer(self):
         m = Mirrativ()
         m.check()
-        time.sleep(sec)
+        await asyncio.sleep(sec)
 
 
-Localtimer()
+async def main():
+    t = Localtimer()
+    tasks = asyncio.gather(t.youtube_timer(), t.mirrativ_timer())
+    await tasks
+
+if __name__ == '__main__':
+    while True:
+        try:
+            asyncio.run(main())
+        except:
+            time.sleep(sec_error)
+
