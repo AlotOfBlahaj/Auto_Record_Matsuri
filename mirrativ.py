@@ -2,7 +2,7 @@ from config import *
 from tools import gethtml
 import time
 import json
-import asyncio
+
 
 class Mirrativ(object):
 
