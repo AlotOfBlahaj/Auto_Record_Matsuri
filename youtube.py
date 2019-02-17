@@ -62,8 +62,6 @@ class Youtube(object):
                 break
 
     def check(self):
-        try:
             self.html = gethtml('https://www.youtube.com/channel/{}/featured'.format(ChannelID))
             self.judge()
-        except:
-            print('Youtube|' + 'Something wrong. Retrying')
+

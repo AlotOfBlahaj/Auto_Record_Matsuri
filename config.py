@@ -9,6 +9,6 @@ ChannelID = 'UCQ0UDLQCjY0rmuxCDE38FGg'
 # mirrativ用户ID
 userid = '3264432'
 # 检测间隔时间（s）
-sec = 14
+sec = 120
 # 无预定时间隔时间（s）
 sec_error = 120
