@@ -50,11 +50,11 @@ class Check(object):
         # Caches
         self.caches_livestatus = {'Live': [], 'Upcoming': []}
         while True:
-            if not self.caches_livestatus['Upcoming']:
-                self.html = gethtml('https://www.youtube.com/channel/{}/featured'.format(ChannelID))
             try:
-                self.live_check_timer()
-                time.sleep(sec1)
+                if not self.caches_livestatus['Upcoming']:
+                    self.html = gethtml('https://www.youtube.com/channel/{}/featured'.format(ChannelID))
+                    self.live_check_timer()
+                    time.sleep(sec1)
             except:
                 print('Something wrong. Retrying')
                 time.sleep(5)
