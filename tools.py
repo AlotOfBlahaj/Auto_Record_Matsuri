@@ -1,6 +1,7 @@
 from urllib import request
 from config import proxy
 
+
 def gethtml(url):
     proxy_support = request.ProxyHandler({'http': '%s' % proxy, 'https': '%s' % proxy})
     opener = request.build_opener(proxy_support)
