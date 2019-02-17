@@ -3,7 +3,7 @@ import os
 import time
 from tools import gethtml
 from config import *
-
+import asyncio
 
 class Youtube(object):
     def __init__(self):
@@ -65,7 +65,5 @@ class Youtube(object):
         try:
             self.html = gethtml('https://www.youtube.com/channel/{}/featured'.format(ChannelID))
             self.judge()
-            time.sleep(sec)
         except:
             print('Youtube|' + 'Something wrong. Retrying')
-            time.sleep(sec_error)
