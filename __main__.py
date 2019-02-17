@@ -131,6 +131,9 @@ class Check(object):
                     self.caches_livestatus['Live'].append(vid)
                     downloader(r"https://www.youtube.com/watch?v=" + vid)
                     del self.caches_livestatus['Upcoming'][self.caches_livestatus['Upcoming'].index(x)]
+            else:
+                print(time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                      'Not found Live Upcoming, after {}s checking'.format(sec1))
 
 
 if __name__ == '__main__':
