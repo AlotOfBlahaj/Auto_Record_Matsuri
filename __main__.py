@@ -46,12 +46,12 @@ def downloader(link):
 
 class Check(object):
     def __init__(self):
+        self.ChannelID = ChannelID
         # Caches
         self.caches_livestatus = {'Live': [], 'Upcoming': []}
-        if not self.caches_livestatus['Upcoming']:
-            self.html = gethtml('https://www.youtube.com/channel/{}/featured'.format(ChannelID))
-        self.ChannelID = ChannelID
         while True:
+            if not self.caches_livestatus['Upcoming']:
+                self.html = gethtml('https://www.youtube.com/channel/{}/featured'.format(ChannelID))
             try:
                 self.live_check_timer()
                 time.sleep(sec1)
