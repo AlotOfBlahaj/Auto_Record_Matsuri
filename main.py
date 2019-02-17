@@ -1,4 +1,6 @@
 import threading
+import time
+from config import sec
 from youtube import Youtube
 from mirrativ import Mirrativ
 
@@ -15,6 +17,7 @@ class Localtimer(object):
             if thread_m.is_alive() is False:
                 thread_m = threading.Thread(target=self.mirrativ_timer())
                 thread_m.start()
+            time.sleep(sec)
 
     def youtube_timer(self):
         y = Youtube()

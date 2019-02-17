@@ -2,6 +2,7 @@ from config import *
 from tools import gethtml
 import time
 import json
+import asyncio
 
 class Mirrativ(object):
 
@@ -20,7 +21,5 @@ class Mirrativ(object):
     def check(self):
         try:
             self.live_info(self.id)
-            time.sleep(sec)
         except:
             print('Mirrativ|Something wrong. Retrying')
-            time.sleep(sec_error)
