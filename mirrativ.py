@@ -19,7 +19,4 @@ class Mirrativ(object):
                   'Not found Live, after {}s checking'.format(sec))
 
     def check(self):
-        try:
-            self.live_info(self.id)
-        except:
-            print('Mirrativ|Something wrong. Retrying')
+        self.live_info(self.id)

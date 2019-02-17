@@ -1,31 +1,28 @@
-import threading
 import time
-from config import sec
+from config import sec, sec_error
 from youtube import Youtube
 from mirrativ import Mirrativ
-
+import multiprocessing
 
 class Localtimer(object):
 
     def __init__(self):
-        thread_y = threading.Thread(target=self.youtube_timer())
-        thread_m = threading.Thread(target=self.mirrativ_timer())
         while True:
-            if thread_y.is_alive() is False:
-                thread_y = threading.Thread(target=self.youtube_timer())
-                thread_y.start()
-            if thread_m.is_alive() is False:
-                thread_m = threading.Thread(target=self.mirrativ_timer())
-                thread_m.start()
-            time.sleep(sec)
+            try:
+                multiprocessing.Process(target=self.youtube_timer()).start()
+                multiprocessing.Process(target=self.mirrativ_timer()).start()
+            except:
+                time.sleep(sec_error)
 
     def youtube_timer(self):
         y = Youtube()
         y.check()
+        time.sleep(sec)
 
     def mirrativ_timer(self):
         m = Mirrativ()
         m.check()
+        time.sleep(sec)
 
 
 Localtimer()
