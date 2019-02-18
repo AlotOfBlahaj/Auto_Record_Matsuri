@@ -10,7 +10,7 @@ Auto_Record_Matsuri
 
 支持
 ------
-- 如需更改存储目录和代理地址，请编辑__main__.py
+- 如需更改存储目录和代理地址，请编辑config.py
 
 
 有问题就发Issues吧，有时间就修（鸽了
