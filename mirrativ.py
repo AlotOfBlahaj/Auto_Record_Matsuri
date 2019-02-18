@@ -15,7 +15,7 @@ class Mirrativ(object):
         if nowlive != None:
             return 'https://www.mirrativ.com/live/' + nowlive['live_id']
         else:
-            print('Mirrativ|' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+            print('Mirrativ' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                   'Not found Live, after {}s checking'.format(sec))
 
     def check(self):

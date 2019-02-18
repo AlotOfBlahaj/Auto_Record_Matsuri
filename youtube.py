@@ -37,7 +37,7 @@ class Youtube(object):
             if info_dict.get('Islive') == 'live':
                 return x
             else:
-                print('Youtube|' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                print('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                       '{} is not a live video'.format(info_dict['Title']))
                 return None
 
@@ -47,16 +47,16 @@ class Youtube(object):
                 if vid:
                     self.downloader(r"https://www.youtube.com/watch?v=" + vid)
             elif 'Upcoming live streams' in self.html:
-                print('Youtube|' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                print('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                       'Found A Live Upcoming, after {}s checking'.format(sec))
             else:
-                print('Youtube|' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                print('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                       'Not found Live, after {}s checking'.format(sec))
 
     def downloader(self,link):
         while True:
             os.system(r"youtube-dl --proxy http://{} -o {}/%(title)s.%(ext)s {}".format(proxy, ddir, link))
-            print('Youtube|' + 'Download is broken. Retring \n If the notice always happend, '
+            print('Youtube' + 'Download is broken. Retring \n If the notice always happend, '
                                'please delete the dir ".part" file')
             if '.part' not in os.listdir(ddir):
                 break
