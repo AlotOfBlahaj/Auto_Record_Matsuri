@@ -1,8 +1,9 @@
 import json
 import os
 import time
-from tools import gethtml
+
 from config import *
+from tools import gethtml
 
 
 class Youtube(object):
@@ -39,7 +40,6 @@ class Youtube(object):
             else:
                 print('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                       '{} is not a live video'.format(info_dict['Title']))
-                return None
 
     def judge(self):
             if 'LIVE NOW' in self.html:

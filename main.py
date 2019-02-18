@@ -1,8 +1,9 @@
-import time
-from config import sec, sec_error
-from youtube import Youtube
-from mirrativ import Mirrativ
 import asyncio
+import time
+
+from config import sec, sec_error
+from mirrativ import Mirrativ
+from youtube import Youtube
 
 
 class Localtimer(object):
@@ -28,5 +29,6 @@ if __name__ == '__main__':
         try:
             asyncio.run(main())
         except:
+            print('Something wrong. After {}s retrying'.format(sec_error))
             time.sleep(sec_error)
 
