@@ -43,6 +43,8 @@ if __name__ == '__main__':
                 y = Youtube()
                 y.check()
                 time.sleep(sec)
+            except KeyboardInterrupt:
+                pass
             except:
                 error()
     elif enable_mirrativ and enable_youtube == 0:
@@ -51,6 +53,8 @@ if __name__ == '__main__':
                 m = Mirrativ()
                 m.check()
                 time.sleep(sec)
+            except KeyboardInterrupt:
+                pass
             except:
                 error()
     else:
