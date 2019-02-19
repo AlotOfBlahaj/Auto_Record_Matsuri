@@ -75,6 +75,9 @@ class Youtube:
                     is_break = 1
             if is_break == 1:
                 break
+            else:
+                print('Youtube' + 'Download is broken. Retring \n If the notice always happend, '
+                                  'please delete the dir ".part" file')
 
     def check(self):
             self.html = gethtml('https://www.youtube.com/channel/{}/featured'.format(ChannelID))
