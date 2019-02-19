@@ -66,13 +66,15 @@ class Youtube:
 
     def downloader(self, link):
         while True:
+            is_break = 0
             os.system(r"youtube-dl --proxy http://{} -o {}/%(title)s.%(ext)s {}".format(proxy, ddir, link))
             for x in os.listdir(ddir):
-                if '.ytdl' in os.path.splitext(x):
-                    print('Youtube' + 'Download is broken. Retring \n If the notice always happend, '
-                                      'please delete the dir ".part" file')
-                    break
-            break
+                if '.part' in os.path.splitext(x):
+                    is_break = 0
+                else:
+                    is_break = 1
+            if is_break == 1:
+                break
 
     def check(self):
             self.html = gethtml('https://www.youtube.com/channel/{}/featured'.format(ChannelID))
