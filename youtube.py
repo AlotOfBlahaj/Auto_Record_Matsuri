@@ -64,13 +64,15 @@ class Youtube:
                 print('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                       'Found A Live, waiting for it to close'.format(sec))
 
-    def downloader(self,link):
+    def downloader(self, link):
         while True:
             os.system(r"youtube-dl --proxy http://{} -o {}/%(title)s.%(ext)s {}".format(proxy, ddir, link))
-            print('Youtube' + 'Download is broken. Retring \n If the notice always happend, '
-                              'please delete the dir ".part" file')
-            if '.part' not in os.listdir(ddir):
-                break
+            for x in os.listdir(ddir):
+                if '.ytdl' in os.path.splitext(x):
+                    print('Youtube' + 'Download is broken. Retring \n If the notice always happend, '
+                                      'please delete the dir ".part" file')
+                    break
+            break
 
     def check(self):
             self.html = gethtml('https://www.youtube.com/channel/{}/featured'.format(ChannelID))
