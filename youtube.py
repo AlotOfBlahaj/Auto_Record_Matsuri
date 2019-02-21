@@ -12,24 +12,23 @@ class Youtube:
 
     def __init__(self):
         self.ChannelID = ChannelID
+        self.html = gethtml('https://www.youtube.com/channel/{}/featured'.format(ChannelID))
 
     # 关于SearchAPI的文档 https://developers.google.com/youtube/v3/docs/search/list
     def get_videoid_by_channelid(self):
-        channel_info = json.loads(gethtml(r'https://www.googleapis.com/youtube/v3/search?key={}&channelId={}'
-                                          r'&part=snippet,id&order=date&maxResults=5'.format(ApiKey, self.ChannelID)))
+        channel_info = json.loads(gethtml(rf'https://www.googleapis.com/youtube/v3/search?key={ApiKey}'
+                                          rf'&channelId={self.ChannelID}&part=snippet,id&order=date&maxResults=5'))
         # 判断获取的数据是否正确
         if channel_info['items']:
-            vid = []
             item = channel_info['items']
-            for x in item:
-                vid.append(x['id']['videoId'])
+            vid = [x['id']['videoId'] for x in item]
             return vid
 
     def getlive_vid(self):
         vid = self.get_videoid_by_channelid()
         for x in vid:
-            live_info = json.loads(gethtml(r'https://www.googleapis.com/youtube/v3/videos?id={}&key={}&'
-                                           r'part=liveStreamingDetails,snippet'.format(x, ApiKey)))
+            live_info = json.loads(gethtml(rf'https://www.googleapis.com/youtube/v3/videos?id={x}&key={ApiKey}&'
+                                           r'part=liveStreamingDetails,snippet'))
             # 判断视频是否正确
             if live_info['pageInfo']['totalResults'] != 1:
                 raise ValueError
@@ -42,7 +41,7 @@ class Youtube:
                 return x
             else:
                 print('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                      '{} is not a live video'.format(info_dict['Title']))
+                      f'{info_dict["Title"]} is not a live video')
 
     def judge(self):
         global is_live
@@ -64,22 +63,27 @@ class Youtube:
                 print('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                       'Found A Live, waiting for it to close'.format(sec))
 
-    def downloader(self, link):
+    @staticmethod
+    def downloader(link):
         while True:
-            is_break = 0
-            os.system(r"youtube-dl --proxy http://{} -o {}/%(title)s.%(ext)s {}".format(proxy, ddir, link))
-            for x in os.listdir(ddir):
-                if '.part' in os.path.splitext(x):
-                    is_break = 0
+            if ydl == 1:
+                is_break = 0
+                os.system(rf"youtube-dl -f 22 --proxy http://{proxy} -o {ddir}/%(title)s.%(ext)s {link}")
+                for x in os.listdir(ddir):
+                    if '.part' in os.path.splitext(x):
+                        is_break = 0
+                    else:
+                        is_break = 1
+                if is_break == 1:
+                    break
                 else:
-                    is_break = 1
-            if is_break == 1:
+                    print('Youtube' + 'Download is broken. Retring \n If the notice always happend, '
+                                      'please delete the dir ".part" file')
+            if yget == 1:
+                os.system(rf"you-get -x {proxy} --itag=22 -o {ddir} {link}")
                 break
-            else:
-                print('Youtube' + 'Download is broken. Retring \n If the notice always happend, '
-                                  'please delete the dir ".part" file')
+        global is_live
+        is_live = False
 
     def check(self):
-            self.html = gethtml('https://www.youtube.com/channel/{}/featured'.format(ChannelID))
-            self.judge()
-
+        self.judge()
