@@ -22,5 +22,5 @@ enable_mirrativ = 1
 # 1-在直播时抓流(建议
 # 2-下播后抓流
 download_in_live = 1
-# 下载质量选择项[720p,1080p]
+# 下载质量选择项[720p,1080p] M台不支持画质调整
 quality = '720p'
