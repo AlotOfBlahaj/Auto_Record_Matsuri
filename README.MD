@@ -9,13 +9,12 @@ Auto_Record_Matsuri
 
 需要
 ------
-- 手动安装FFMPEG并设置PATH
-- 首次启动时请先运行install
+- 首次启动或更新时请先运行install
 - 你可以运行run打开程序
 
 支持
 ------
-- 如需更改存储目录和代理地址，请编辑config.py
+- 更多设置，请编辑config.py
 
 
 有问题就发Issues吧，有时间就修（鸽了
