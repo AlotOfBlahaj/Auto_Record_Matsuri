@@ -1,12 +1,8 @@
 import json
 import time
-
 import ffmpy
-
-from config import *
-from tools import gethtml
-
-
+from config import userid, sec, ddir
+from tools import gethtml, echo_log
 # from subprocess import PIPE, Popen, STDOUT
 
 
@@ -33,6 +29,8 @@ class Mirrativ:
     def downloader(url, title):
         ff = ffmpy.FFmpeg(inputs={f'{url}': None}, outputs={f'{ddir}/{title}.ts': '-c:v copy -c:a copy'})
         ff.run()
+        echo_log('Mirrativ' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                 f'{title} was already downloaded')
         # p = Popen(['ffmpeg', '-i', f'{url}', f"{ddir}/{title}.ts", '-c:v', 'copy',
         #            '-c:a', 'copy', '-bsf:a', 'aac_adtstoasc'], stdin=PIPE, stdout=PIPE, stderr=STDOUT)
         # try:
@@ -45,5 +43,5 @@ class Mirrativ:
         if is_live:
             self.get_hsl()
         else:
-            print('Mirrativ' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                  'Not found Live, after {}s checking'.format(sec))
+            echo_log('Mirrativ' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                     f'Not found Live, after {sec}s checking')
