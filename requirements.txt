@@ -2,7 +2,6 @@ asyncio==3.4.3
 certifi==2018.11.29
 chardet==3.0.4
 decorator==4.3.2
-ffmpy==0.2.2
 future==0.17.1
 get==2018.11.19
 idna==2.8

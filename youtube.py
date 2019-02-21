@@ -22,6 +22,8 @@ class Youtube:
             else:
                 # 此处最外层应为" 内层为'
                 self.proxy = '--https-proxy ' + f'"http://{proxy}"'
+        else:
+            self.proxy = ''
         # 品质设置
         if download_in_live == 0:
             self.quality = f'-f {Youtube._ydl_quality[quality]}'

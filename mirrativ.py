@@ -1,15 +1,18 @@
 import json
 import time
-import ffmpy
-from config import userid, sec, ddir
+import subprocess
+from config import userid, sec, ddir, proxy, enable_proxy
 from tools import gethtml, echo_log
-# from subprocess import PIPE, Popen, STDOUT
 
 
 class Mirrativ:
 
     def __init__(self):
         self.id = userid
+        if enable_proxy == 1:
+            self.proxy = '--https-proxy ' + f'"http://{proxy}"'
+        else:
+            self.proxy = ''
 
     @staticmethod
     def live_info():
@@ -25,18 +28,14 @@ class Mirrativ:
         steaming_url = hsl_info['streaming_url_hls']
         self.downloader(steaming_url, title)
 
-    @staticmethod
-    def downloader(url, title):
-        ff = ffmpy.FFmpeg(inputs={f'{url}': None}, outputs={f'{ddir}/{title}.ts': '-c:v copy -c:a copy'})
-        ff.run()
+    def downloader(self, url, title):
+        # ff = ffmpy.FFmpeg(inputs={f'{url}': None}, outputs={f'{ddir}/{title}.ts': '-c:v copy -c:a copy'})
+        # ff.run()
+        subprocess.run(
+            "streamlink --hls-live-restart --loglevel trace "
+            f"{self.proxy} -o {ddir}/{title}.ts {url} best")
         echo_log('Mirrativ' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                  f'{title} was already downloaded')
-        # p = Popen(['ffmpeg', '-i', f'{url}', f"{ddir}/{title}.ts", '-c:v', 'copy',
-        #            '-c:a', 'copy', '-bsf:a', 'aac_adtstoasc'], stdin=PIPE, stdout=PIPE, stderr=STDOUT)
-        # try:
-        #     p.communicate()
-        # except KeyboardInterrupt:
-        #     p.stdin.write('q'.encode('utf-8'))
 
     def check(self):
         is_live = self.live_info()
