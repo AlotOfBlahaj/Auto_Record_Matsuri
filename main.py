@@ -4,6 +4,7 @@ import time
 from config import sec, sec_error, enable_mirrativ, enable_youtube
 from mirrativ import Mirrativ
 from youtube import Youtube
+from tools import echo_log
 
 
 class Localtimer:
@@ -29,7 +30,7 @@ async def main():
 
 
 def error():
-    print(f'Something wrong. After {sec_error}s retrying')
+    echo_log(f'Something wrong. After {sec_error}s retrying')
     time.sleep(sec_error)
 
 
@@ -63,5 +64,5 @@ if __name__ == '__main__':
             except:
                 error()
     else:
-        print('You should enable a module')
+        echo_log('You should enable a module')
         exit(-1)
