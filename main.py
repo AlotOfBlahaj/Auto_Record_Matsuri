@@ -8,14 +8,16 @@ from youtube import Youtube
 
 class Localtimer:
 
+    def __init__(self):
+        self.y = Youtube()
+        self.m = Mirrativ()
+
     async def youtube_timer(self):
-        y = Youtube()
-        y.check()
+        self.y.check()
         await asyncio.sleep(sec)
 
     async def mirrativ_timer(self):
-        m = Mirrativ()
-        m.check()
+        self.m.check()
         await asyncio.sleep(sec)
 
 
@@ -23,10 +25,11 @@ async def main():
     t = Localtimer()
     tasks = asyncio.gather(t.youtube_timer(), t.mirrativ_timer())
     await tasks
+    del t
 
 
 def error():
-    print('Something wrong. After {}s retrying'.format(sec_error))
+    print(f'Something wrong. After {sec_error}s retrying')
     time.sleep(sec_error)
 
 
@@ -42,6 +45,7 @@ if __name__ == '__main__':
             try:
                 y = Youtube()
                 y.check()
+                del y
                 time.sleep(sec)
             except KeyboardInterrupt:
                 pass
@@ -52,6 +56,7 @@ if __name__ == '__main__':
             try:
                 m = Mirrativ()
                 m.check()
+                del m
                 time.sleep(sec)
             except KeyboardInterrupt:
                 pass
