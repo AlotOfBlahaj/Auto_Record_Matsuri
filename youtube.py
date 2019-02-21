@@ -1,18 +1,32 @@
 import json
 import os
 import time
-
-from config import *
-from tools import gethtml
+import subprocess
+from config import ChannelID, ApiKey, download_in_live, sec, proxy, enable_proxy, ddir, quality
+from tools import gethtml, echo_log
 
 is_live = False
 
 
 class Youtube:
+    # ydl品质表
+    _ydl_quality = {'720p': '22', '1080p': '137+141'}
 
     def __init__(self):
         self.ChannelID = ChannelID
         self.html = gethtml('https://www.youtube.com/channel/{}/featured'.format(ChannelID))
+        # 代理设置
+        if enable_proxy == 1:
+            if download_in_live == 0:
+                self.proxy = f'--proxy http://{proxy}'
+            else:
+                # 此处最外层应为" 内层为'
+                self.proxy = '--https-proxy ' + f'"http://{proxy}"'
+        # 品质设置
+        if download_in_live == 0:
+            self.quality = f'-f {Youtube._ydl_quality[quality]}'
+        else:
+            self.quality = quality
 
     # 关于SearchAPI的文档 https://developers.google.com/youtube/v3/docs/search/list
     def get_videoid_by_channelid(self):
@@ -38,52 +52,69 @@ class Youtube:
             info_dict = {'Title': snippet['title'],
                          'Islive': snippet['liveBroadcastContent']}
             if info_dict.get('Islive') == 'live':
-                return x
+                return [x, info_dict['Title']]
             else:
-                print('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                      f'{info_dict["Title"]} is not a live video')
+                echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                         f'{info_dict["Title"]} is not a live video')
 
     def judge(self):
         global is_live
         if not is_live:
             if 'LIVE NOW' in self.html:
                 is_live = self.getlive_vid()
-                print('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                      'Found A Live, waiting for it to close'.format(sec))
+                if download_in_live == 1:
+                    echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                             'Found A Live, starting downloader')
+                    self.downloader_live(r"https://www.youtube.com/watch?v=" + is_live[0], is_live[1])
+                    is_live = False
+                else:
+                    echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                             'Found A Live, waiting for it to close')
             elif 'Upcoming live streams' in self.html:
-                print('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                      'Found A Live Upcoming, after {}s checking'.format(sec))
+                echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                         f'Found A Live Upcoming, after {sec}s checking')
             else:
-                print('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                      'Not found Live, after {}s checking'.format(sec))
+                echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                         f'Not found Live, after {sec}s checking')
         else:
             if 'LIVE NOW' not in self.html:
-                self.downloader(r"https://www.youtube.com/watch?v=" + is_live)
+                self.downloader(r"https://www.youtube.com/watch?v=" + is_live[0])
+                echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                         f'{is_live[1]} already downloaded')
             else:
-                print('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                      'Found A Live, waiting for it to close'.format(sec))
+                echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                         'Found A Live, waiting for it to close')
 
-    @staticmethod
-    def downloader(link):
+    def downloader(self, link):
         while True:
-            if ydl == 1:
-                is_break = 0
-                os.system(rf"youtube-dl -f 22 --proxy http://{proxy} -o {ddir}/%(title)s.%(ext)s {link}")
-                for x in os.listdir(ddir):
-                    if '.part' in os.path.splitext(x):
-                        is_break = 0
-                    else:
-                        is_break = 1
-                if is_break == 1:
-                    break
+            is_break = 0
+            subprocess.run(rf"youtube-dl {self.quality} {self.proxy} -o {ddir}/%(title)s.%(ext)s {link}")
+            # os.system(rf"youtube-dl {self.quality} {self.proxy} -o {ddir}/%(title)s.%(ext)s {link}")
+            for x in os.listdir(ddir):
+                if '.part' in os.path.splitext(x):
+                    is_break = 0
                 else:
-                    print('Youtube' + 'Download is broken. Retring \n If the notice always happend, '
-                                      'please delete the dir ".part" file')
-            if yget == 1:
-                os.system(rf"you-get -x {proxy} --itag=22 -o {ddir} {link}")
+                    is_break = 1
+            if is_break == 1:
                 break
+            else:
+                echo_log('Youtube' + 'Download is broken. Retrying \n If the notice always happen, '
+                                     'please delete the dir ".part" file')
+            break
         global is_live
         is_live = False
+
+    def downloader_live(self, link, title):
+        while True:
+            try:
+                subprocess.run(
+                    "streamlink --hls-live-restart --loglevel trace "
+                    f"{self.proxy} -o {ddir}/{title}.ts {link} {self.quality}")
+                # 不应该使用os.system
+                # os.system(f"streamlink --hls-live-restart {self.proxy} -o '{title}.ts' {link} {self.quality}")
+                break
+            except:
+                echo_log('Youtube| Download is broken. Retrying')
 
     def check(self):
         self.judge()
