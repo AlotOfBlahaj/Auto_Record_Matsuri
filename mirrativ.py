@@ -1,7 +1,7 @@
 import json
 import time
 import subprocess
-from config import sec
+from config import sec, host, group_id
 from tools import gethtml, echo_log
 
 
@@ -30,6 +30,7 @@ class Mirrativ:
                                       self.enable_proxy, self.proxy))
         title = hsl_info['shares']['twitter']['card']['title']
         steaming_url = hsl_info['streaming_url_hls']
+        bot(host, group_id, f'A live, {title}, is streaming. url:  {steaming_url}')
         self.downloader(steaming_url, title)
 
     def downloader(self, url, title):
