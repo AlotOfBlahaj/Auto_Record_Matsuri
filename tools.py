@@ -1,7 +1,7 @@
 from urllib import request
 from config import proxy, enable_proxy
 from time import strftime, localtime, time
-from os import getcwd
+from os import getcwd, mkdir
 
 def gethtml(url):
     if enable_proxy == 1:
@@ -22,5 +22,10 @@ def gethtml(url):
 def echo_log(log):
     today = strftime('%m-%d', localtime(time()))
     print(log)
-    with open(getcwd() + rf"\log\log-{today}.log", 'a') as logs:
-        logs.write(log + "\n")
+    while True:
+        try:
+            with open(getcwd() + rf"\log\log-{today}.log", 'a') as logs:
+                logs.write(log + "\n")
+            break
+        except FileNotFoundError:
+            mkdir("log")
