@@ -8,7 +8,7 @@ from mirrativ import Mirrativ
 from youtube import Youtube
 from tools import echo_log
 
-
+# 定时器，以后考虑用scheduler代替？
 class Localtimer:
 
     def __init__(self):
@@ -24,6 +24,7 @@ class Localtimer:
         await asyncio.sleep(sec)
 
 
+# 这个异步功能有限，考虑在每个模块请求IO时也加入异步处理
 async def main():
     t = Localtimer()
     tasks = asyncio.gather(t.youtube_timer(), t.mirrativ_timer())

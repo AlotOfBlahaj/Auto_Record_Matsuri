@@ -2,7 +2,7 @@ import json
 import time
 import subprocess
 from config import sec, host, group_id
-from tools import gethtml, echo_log
+from tools import gethtml, echo_log, bot
 
 
 class Mirrativ:
@@ -41,6 +41,7 @@ class Mirrativ:
             f"{self.proxy} -o {self.ddir}/{title}.ts {url} best")
         echo_log('Mirrativ' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                  f'{title} was already downloaded')
+        bot(host, group_id, f'{title} is already downloaded')
 
     def check(self):
         is_live = self.live_info()
