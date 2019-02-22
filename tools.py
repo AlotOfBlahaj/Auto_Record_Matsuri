@@ -29,3 +29,7 @@ def echo_log(log):
             break
         except FileNotFoundError:
             mkdir("log")
+
+def bot(host, group_id, message):
+    req = request.Request(f'http://{host}/send_group_msg?group_id={group_id}&message={message}')
+    
