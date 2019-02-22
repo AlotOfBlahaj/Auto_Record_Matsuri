@@ -71,6 +71,7 @@ class Youtube:
         if not is_live:
             if 'LIVE NOW' in self.html:
                 is_live = self.getlive_vid()
+                bot(host, group_id, f'A live, {is_live[1]}, is streaming. url:  https://www.youtube.com/watch?v={is_live[0]}')         
                 if self.download_in_live == 1:
                     echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                              'Found A Live, starting downloader')
