@@ -11,7 +11,7 @@ channel_id = 'UCQ0UDLQCjY0rmuxCDE38FGg'  # UCQ0UDLQCjY0rmuxCDE38FGg
 # mirrativ用户ID
 userid = '3264432'  # 3264432
 # 检测间隔时间（s）
-sec = 180
+sec = 30
 # 错误间隔时间（s）
 sec_error = 5
 # 是否开启youtube监控 0/1
@@ -25,6 +25,6 @@ download_in_live = 1
 # 下载质量选择项[720p,1080p] M台不支持画质调整
 quality = '720p'
 # 酷Q机器人HTTPAPI接口
-host = '127.0.0.1:12450'
-# QQ群号
+host = '127.0.0.1:5700'
+# 要发送消息的QQ群号，暂时不支持多群
 group_id = ''

@@ -3,7 +3,7 @@ import os
 import time
 import subprocess
 from config import sec, host, group_id
-from tools import gethtml, echo_log
+from tools import gethtml, echo_log, bot
 
 is_live = False
 
@@ -39,7 +39,7 @@ class Youtube:
     # 关于SearchAPI的文档 https://developers.google.com/youtube/v3/docs/search/list
     def get_videoid_by_channel_id(self):
         channel_info = json.loads(gethtml(rf'https://www.googleapis.com/youtube/v3/search?key={self.api_key}'
-                                          rf'&channel_id={self.channel_id}&part=snippet,id&order=date&maxResults=5',
+                                          rf'&channelId={self.channel_id}&part=snippet,id&order=date&maxResults=5',
                                           self.enable_proxy, self.proxy))
         # 判断获取的数据是否正确
         if channel_info['items']:
@@ -71,11 +71,14 @@ class Youtube:
         if not is_live:
             if 'LIVE NOW' in self.html:
                 is_live = self.getlive_vid()
-                bot(host, group_id, f'A live, {is_live[1]}, is streaming. url:  https://www.youtube.com/watch?v={is_live[0]}')         
+                bot(host, group_id,
+                    f'A live, {is_live[1]}, is streaming. url:  https://www.youtube.com/watch?v={is_live[0]}')
                 if self.download_in_live == 1:
                     echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                              'Found A Live, starting downloader')
                     self.downloader_live(r"https://www.youtube.com/watch?v=" + is_live[0], is_live[1])
+                    bot(host, group_id,
+                        f'{is_live[1]} is already downloaded')
                     is_live = False
                 else:
                     echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
@@ -89,6 +92,8 @@ class Youtube:
         else:
             if 'LIVE NOW' not in self.html:
                 self.downloader(r"https://www.youtube.com/watch?v=" + is_live[0])
+                bot(host, group_id,
+                    f'{is_live[1]} is already downloaded')
                 echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                          f'{is_live[1]} already downloaded')
             else:
