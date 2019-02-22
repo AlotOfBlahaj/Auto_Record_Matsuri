@@ -1,7 +1,9 @@
 import asyncio
 import time
 
-from config import sec, sec_error, enable_mirrativ, enable_youtube
+from config import (
+    sec, sec_error, enable_mirrativ, enable_youtube, enable_proxy,
+    userid, ddir, proxy, channel_id, api_key, quality, download_in_live)
 from mirrativ import Mirrativ
 from youtube import Youtube
 from tools import echo_log
@@ -10,8 +12,8 @@ from tools import echo_log
 class Localtimer:
 
     def __init__(self):
-        self.y = Youtube()
-        self.m = Mirrativ()
+        self.y = Youtube(channel_id, enable_proxy, proxy, ddir, api_key, quality, download_in_live)
+        self.m = Mirrativ(userid, enable_proxy, proxy, ddir)
 
     async def youtube_timer(self):
         self.y.check()
@@ -44,7 +46,7 @@ if __name__ == '__main__':
     elif enable_youtube and enable_mirrativ == 0:
         while True:
             try:
-                y = Youtube()
+                y = Youtube(channel_id, enable_proxy, proxy, ddir, api_key, quality, download_in_live)
                 y.check()
                 del y
                 time.sleep(sec)
@@ -55,7 +57,7 @@ if __name__ == '__main__':
     elif enable_mirrativ and enable_youtube == 0:
         while True:
             try:
-                m = Mirrativ()
+                m = Mirrativ(userid, enable_proxy, proxy, ddir)
                 m.check()
                 del m
                 time.sleep(sec)

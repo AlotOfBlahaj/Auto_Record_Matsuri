@@ -1,22 +1,22 @@
 import json
 import time
 import subprocess
-from config import userid, sec, ddir, proxy, enable_proxy
+from config import sec
 from tools import gethtml, echo_log
 
 
 class Mirrativ:
 
-    def __init__(self):
+    def __init__(self, userid, enable_proxy, proxy, ddir):
+        self.ddir = ddir
         self.id = userid
         if enable_proxy == 1:
             self.proxy = '--https-proxy ' + f'"http://{proxy}"'
         else:
             self.proxy = ''
 
-    @staticmethod
-    def live_info():
-        l_info = json.loads(gethtml('https://www.mirrativ.com/api/user/profile?user_id={}'.format(userid)))
+    def live_info(self):
+        l_info = json.loads(gethtml(f'https://www.mirrativ.com/api/user/profile?user_id={self.id}'))
         nowlive = l_info['onlive']
         if nowlive:
             return nowlive['live_id']
@@ -33,7 +33,7 @@ class Mirrativ:
         # ff.run()
         subprocess.run(
             "streamlink --hls-live-restart --loglevel trace "
-            f"{self.proxy} -o {ddir}/{title}.ts {url} best")
+            f"{self.proxy} -o {self.ddir}/{title}.ts {url} best")
         echo_log('Mirrativ' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                  f'{title} was already downloaded')
 
