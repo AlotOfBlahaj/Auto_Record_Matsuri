@@ -2,8 +2,8 @@ import json
 import os
 import time
 import subprocess
-from config import sec
-from tools import gethtml, echo_log, host, group_id
+from config import sec, host, group_id
+from tools import gethtml, echo_log
 
 is_live = False
 
