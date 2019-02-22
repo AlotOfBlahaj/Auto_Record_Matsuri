@@ -24,3 +24,7 @@ enable_mirrativ = 1
 download_in_live = 1
 # 下载质量选择项[720p,1080p] M台不支持画质调整
 quality = '720p'
+# 酷Q机器人HTTPAPI接口
+host = 127.0.0.1:12450
+# QQ群号
+group_id =
