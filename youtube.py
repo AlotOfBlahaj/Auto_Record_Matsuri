@@ -3,7 +3,7 @@ import os
 import time
 import subprocess
 from config import sec
-from tools import gethtml, echo_log
+from tools import gethtml, echo_log, host, group_id
 
 is_live = False
 
