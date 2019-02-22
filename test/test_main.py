@@ -1,7 +1,11 @@
 import pytest
-from mirrativ import  Mirrativ
-from youtube import  Youtube
+import sys
+
+from mirrativ import Mirrativ
+from youtube import Youtube
 from os import getcwd
+
+sys.path.insert(0, '..')
 
 
 def test_mirrativ():
