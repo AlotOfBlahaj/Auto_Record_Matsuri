@@ -1,7 +1,7 @@
 import json
 import time
 import subprocess
-from config import sec
+from config import sec, host, group_id
 from tools import gethtml, echo_log
 
 
