@@ -16,15 +16,16 @@ class Youtube:
         self.channel_id = channel_id
         self.api_key = api_key
         self.ddir = ddir
-        self.html = gethtml('https://www.youtube.com/channel/{}/featured'.format(channel_id))
         self.download_in_live = download_in_live
+        self.enable_proxy = enable_proxy
         # 代理设置
-        if enable_proxy == 1:
+        if self.enable_proxy == 1:
+            self.proxy = proxy
             if self.download_in_live == 0:
-                self.proxy = f'--proxy http://{proxy}'
+                self.dl_proxy = f'--proxy http://{proxy}'
             else:
                 # 此处最外层应为" 内层为'
-                self.proxy = '--https-proxy ' + f'"http://{proxy}"'
+                self.dl_proxy = '--https-proxy ' + f'"http://{proxy}"'
         else:
             self.proxy = ''
         # 品质设置
@@ -32,11 +33,14 @@ class Youtube:
             self.quality = f'-f {Youtube._ydl_quality[quality]}'
         else:
             self.quality = quality
+        self.html = gethtml(f'https://www.youtube.com/channel/{self.channel_id}/featured',
+                            self.enable_proxy, self.proxy)
 
     # 关于SearchAPI的文档 https://developers.google.com/youtube/v3/docs/search/list
     def get_videoid_by_channel_id(self):
         channel_info = json.loads(gethtml(rf'https://www.googleapis.com/youtube/v3/search?key={self.api_key}'
-                                          rf'&channel_id={self.channel_id}&part=snippet,id&order=date&maxResults=5'))
+                                          rf'&channel_id={self.channel_id}&part=snippet,id&order=date&maxResults=5',
+                                          self.enable_proxy, self.proxy))
         # 判断获取的数据是否正确
         if channel_info['items']:
             item = channel_info['items']
@@ -47,7 +51,7 @@ class Youtube:
         vid = self.get_videoid_by_channel_id()
         for x in vid:
             live_info = json.loads(gethtml(rf'https://www.googleapis.com/youtube/v3/videos?id={x}&key={self.api_key}&'
-                                           r'part=liveStreamingDetails,snippet'))
+                                           r'part=liveStreamingDetails,snippet', self.enable_proxy, self.proxy))
             # 判断视频是否正确
             if live_info['pageInfo']['totalResults'] != 1:
                 raise ValueError
@@ -93,7 +97,7 @@ class Youtube:
     def downloader(self, link):
         while True:
             is_break = 0
-            subprocess.run(rf"youtube-dl {self.quality} {self.proxy} -o {self.ddir}/%(title)s.%(ext)s {link}")
+            subprocess.run(rf"youtube-dl {self.quality} {self.dl_proxy} -o {self.ddir}/%(title)s.%(ext)s {link}")
             # os.system(rf"youtube-dl {self.quality} {self.proxy} -o {ddir}/%(title)s.%(ext)s {link}")
             for x in os.listdir(self.ddir):
                 if '.part' in os.path.splitext(x):
@@ -114,7 +118,7 @@ class Youtube:
             try:
                 subprocess.run(
                     "streamlink --hls-live-restart --loglevel trace "
-                    f"{self.proxy} -o {self.ddir}/{title}.ts {link} {self.quality}")
+                    f"{self.dl_proxy} -o {self.ddir}/{title}.ts {link} {self.quality}")
                 # 不应该使用os.system
                 # os.system(f"streamlink --hls-live-restart {self.proxy} -o '{title}.ts' {link} {self.quality}")
                 break
