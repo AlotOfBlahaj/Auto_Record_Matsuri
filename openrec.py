@@ -1,9 +1,8 @@
-from lxml import etree
 from tools import gethtml, echo_log, bot, bd_upload
 from config import host, group_id, sec
 import subprocess
 import time
-
+from lxml.html import etree
 
 class Openrec:
     def __init__(self, oprec_id, enable_proxy, proxy, ddir):
