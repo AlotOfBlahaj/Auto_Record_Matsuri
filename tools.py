@@ -1,9 +1,9 @@
 import json
 import subprocess
-from urllib import request
-from time import strftime, localtime, time
-from os import getcwd, mkdir
-from config import ddir
+from urllib import request, error
+from time import strftime, localtime, time, sleep
+from os import getcwd, mkdir, name
+from config import ddir, sec_error
 
 
 def gethtml(url, enable_proxy, proxy):
@@ -17,10 +17,18 @@ def gethtml(url, enable_proxy, proxy):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101 Firefox/60.0',
     }
     req = request.Request(url, headers=fake_headers)
-    response = request.urlopen(req)
+    try:
+        response = request.urlopen(req)
+    except error.URLError:
+        m_error('URL error!')
     html = response.read()
     html = html.decode('utf-8', 'ignore')
     return html
+
+
+def m_error(msg):
+    echo_log(f'{msg}. After {sec_error}s retrying')
+    sleep(sec_error)
 
 
 def echo_log(log):
@@ -54,15 +62,19 @@ def bot(host, group_id, message):
     request.urlopen(req)
 
 
-# 暂且只能支持windows
 def bd_upload(file):
-    command = f'.\\BaiduPCS-Go\\BaiduPCS-Go.exe upload {ddir}/{file} /'
-    # 此处一定要注明encoding
+    if 'nt' in name:
+        command = f'.\\BaiduPCS-Go\\BaiduPCS-Go.exe upload {ddir}/{file} /'
+        command2 = f'.\\BaiduPCS-GO\\BaiduPCS-Go.exe share set {file}'
+    else:
+        command = f'BaiduPCS-Go/BaiduPCS-Go upload {ddir}/{file} /'
+        command2 = f'BaiduPCS-GO/BaiduPCS-Go share set {file}'
+        # 此处一定要注明encoding
     s = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                          encoding='utf-8', shell=True, universal_newlines=True)
     s.communicate()
     s.wait()
-    command2 = f'.\\BaiduPCS-GO\\BaiduPCS-Go.exe share set {file}'
+
     s = subprocess.Popen(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                          encoding='utf-8', shell=True, universal_newlines=True)
     line = s.stdout.readline()

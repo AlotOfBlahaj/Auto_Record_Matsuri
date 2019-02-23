@@ -2,11 +2,12 @@ import asyncio
 import time
 
 from config import (
-    sec, sec_error, enable_mirrativ, enable_youtube, enable_proxy,
+    sec, enable_mirrativ, enable_youtube, enable_proxy,
     userid, ddir, proxy, channel_id, api_key, quality, download_in_live)
 from mirrativ import Mirrativ
 from youtube import Youtube
 from tools import echo_log
+
 
 # 定时器，以后考虑用scheduler代替？
 class Localtimer:
@@ -32,40 +33,23 @@ async def main():
     del t
 
 
-def error():
-    echo_log(f'Something wrong. After {sec_error}s retrying')
-    time.sleep(sec_error)
-
-
 if __name__ == '__main__':
     if enable_mirrativ and enable_youtube:
         while True:
-            try:
-                asyncio.run(main())
-            except:
-                error()
+            asyncio.run(main())
     elif enable_youtube and enable_mirrativ == 0:
         while True:
-            try:
-                y = Youtube(channel_id, enable_proxy, proxy, ddir, api_key, quality, download_in_live)
-                y.check()
-                del y
-                time.sleep(sec)
-            except KeyboardInterrupt:
-                pass
-            except:
-                error()
+            y = Youtube(channel_id, enable_proxy, proxy, ddir, api_key, quality, download_in_live)
+            y.check()
+            del y
+            time.sleep(sec)
+
     elif enable_mirrativ and enable_youtube == 0:
         while True:
-            try:
-                m = Mirrativ(userid, enable_proxy, proxy, ddir)
-                m.check()
-                del m
-                time.sleep(sec)
-            except KeyboardInterrupt:
-                pass
-            except:
-                error()
+            m = Mirrativ(userid, enable_proxy, proxy, ddir)
+            m.check()
+            del m
+            time.sleep(sec)
     else:
         echo_log('You should enable a module')
         exit(-1)
