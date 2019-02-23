@@ -3,7 +3,7 @@ import os
 import time
 import subprocess
 from config import sec, host, group_id
-from tools import gethtml, echo_log, bot
+from tools import gethtml, echo_log, bot, bd_upload
 
 is_live = False
 
@@ -79,6 +79,8 @@ class Youtube:
                     self.downloader_live(r"https://www.youtube.com/watch?v=" + is_live[0], is_live[1])
                     bot(host, group_id,
                         f'{is_live[1]} is already downloaded')
+                    share = bd_upload(f'{is_live[1].ts}')
+                    bot(host, group_id, share)
                     is_live = False
                 else:
                     echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +

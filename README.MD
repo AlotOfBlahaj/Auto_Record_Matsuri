@@ -18,6 +18,8 @@ Auto_Record_Matsuri [![Build Status](https://travis-ci.org/fzxiao233/Auto_Record
 	    
 - 使用机器人需要下载酷Q Air 并安装 HTTP API（https://cqhttp.cc/）
 
+- 使用自动上传分享需要手动在BaiduPCS-Go文件夹中放入文件，并登录（https://github.com/iikira/BaiduPCS-Go）
+
 支持
 ------
 - 更多设置，请编辑config.py
