@@ -2,7 +2,7 @@ import json
 import time
 import subprocess
 from config import sec, host, group_id
-from tools import gethtml, echo_log, bot
+from tools import gethtml, echo_log, bot, bd_upload
 
 
 class Mirrativ:
@@ -30,7 +30,8 @@ class Mirrativ:
                                       self.enable_proxy, self.proxy))
         title = hsl_info['shares']['twitter']['card']['title']
         steaming_url = hsl_info['streaming_url_hls']
-        bot(host, group_id, f'A live, {title}, is streaming. url:  {steaming_url}')
+        bot(host, group_id, f'A live, {title}, is streaming. '
+                            f'url:  https://www.mirrativ.com/api/live/live?live_id={live_id}')
         self.downloader(steaming_url, title)
 
     def downloader(self, url, title):
@@ -38,10 +39,12 @@ class Mirrativ:
         # ff.run()
         subprocess.run(
             "streamlink --hls-live-restart --loglevel trace "
-            f"{self.proxy} -o {self.ddir}/{title}.ts {url} best")
+            f"{self.dl_proxy} -o {self.ddir}/{title}.ts {url} best")
         echo_log('Mirrativ' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                  f'{title} was already downloaded')
         bot(host, group_id, f'{title} is already downloaded')
+        share = bd_upload(f'{title}.ts')
+        bot(host, group_id, share)
 
     def check(self):
         is_live = self.live_info()

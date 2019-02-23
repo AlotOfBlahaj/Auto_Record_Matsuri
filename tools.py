@@ -1,7 +1,9 @@
 import json
+import subprocess
 from urllib import request
 from time import strftime, localtime, time
 from os import getcwd, mkdir
+from config import ddir
 
 
 def gethtml(url, enable_proxy, proxy):
@@ -26,7 +28,7 @@ def echo_log(log):
     print(log)
     while True:
         try:
-            with open(getcwd() + rf"\log\log-{today}.log", 'a') as logs:
+            with open(getcwd() + rf"/log/log-{today}.log", 'a') as logs:
                 logs.write(log + "\n")
             break
         # 没有log文件夹的话就新建一个
@@ -36,6 +38,9 @@ def echo_log(log):
 
 # 关于机器人HTTP API https://cqhttp.cc/docs/4.7/#/API
 def bot(host, group_id, message):
+    # 此处要重定义opener，否则会使用代理访问
+    opener1 = request.build_opener()
+    request.install_opener(opener1)
     # 传入JSON时，应使用这个UA
     headers = {'Content-Type': 'application/json'}
     # 将消息输入dict再转为json
@@ -48,3 +53,17 @@ def bot(host, group_id, message):
     req = request.Request(f'http://{host}/send_group_msg', headers=headers, data=msg)
     request.urlopen(req)
 
+
+# 暂且只能支持windows
+def bd_upload(file):
+    command = f'.\\BaiduPCS-Go\\BaiduPCS-Go.exe upload {ddir}/{file} /'
+    # 此处一定要注明encoding
+    s = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                         encoding='utf-8', shell=True, universal_newlines=True)
+    s.communicate()
+    s.wait()
+    command2 = f'.\\BaiduPCS-GO\\BaiduPCS-Go.exe share set {file}'
+    s = subprocess.Popen(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                         encoding='utf-8', shell=True, universal_newlines=True)
+    line = s.stdout.readline()
+    return line
