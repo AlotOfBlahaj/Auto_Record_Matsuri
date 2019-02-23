@@ -1,6 +1,6 @@
 import json
 import subprocess
-from urllib import request, error
+from urllib import request
 from time import strftime, localtime, time, sleep
 from os import getcwd, mkdir, name
 from config import ddir, sec_error
@@ -17,10 +17,7 @@ def gethtml(url, enable_proxy, proxy):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101 Firefox/60.0',
     }
     req = request.Request(url, headers=fake_headers)
-    try:
-        response = request.urlopen(req)
-    except error.URLError:
-        m_error('URL error!')
+    response = request.urlopen(req)
     html = response.read()
     html = html.decode('utf-8', 'ignore')
     return html
