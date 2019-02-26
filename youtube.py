@@ -28,6 +28,7 @@ class Youtube:
                 self.dl_proxy = '--https-proxy ' + f'"http://{proxy}"'
         else:
             self.proxy = ''
+            self.dl_proxy = ''
         # 品质设置
         if self.download_in_live == 0:
             self.quality = f'-f {Youtube._ydl_quality[quality]}'
