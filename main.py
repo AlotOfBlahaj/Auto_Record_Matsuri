@@ -2,7 +2,7 @@ import asyncio
 from urllib import error
 from config import (
     sec, enable_mirrativ, enable_youtube, enable_openrec, enable_proxy, oprec_id,
-    userid, ddir, proxy, channel_id, api_key, quality, download_in_live)
+    userid, ddir, proxy, channel_id, api_key, quality)
 from mirrativ import Mirrativ
 from youtube import Youtube
 from tools import m_error
@@ -14,7 +14,7 @@ class Localtimer:
 
     def __init__(self):
         if enable_youtube:
-            self.y = Youtube(channel_id, enable_proxy, proxy, ddir, api_key, quality, download_in_live)
+            self.y = Youtube(channel_id, enable_proxy, proxy, ddir, api_key, quality)
         if enable_mirrativ:
             self.m = Mirrativ(userid, enable_proxy, proxy, ddir)
         if enable_openrec:

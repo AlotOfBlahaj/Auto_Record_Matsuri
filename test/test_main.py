@@ -24,8 +24,7 @@ def test_youtube():
     proxy = ''
     ddir = getcwd()
     quality = '720p'
-    download_in_live = 1
-    y = Youtube(channel_id, enable_proxy, proxy, ddir, apikey, quality, download_in_live)
+    y = Youtube(channel_id, enable_proxy, proxy, ddir, apikey, quality)
     y.check()
 
 
