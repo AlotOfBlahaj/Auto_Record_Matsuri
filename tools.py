@@ -82,11 +82,11 @@ def bd_upload(file):
 def downloader(link, title, dl_proxy, quality='best'):
     while True:
         try:
-            # subprocess.run(
-            #     "streamlink --hls-live-restart --loglevel trace "
-            #     f"{dl_proxy} -o {ddir}/{title}.ts {link} {quality}")
+            subprocess.run(
+                "streamlink --hls-live-restart --loglevel trace "
+                f"{dl_proxy} -o {ddir}/{title}.ts {link} {quality}")
             # 不应该使用os.system
-            # os.system(f"streamlink --hls-live-restart {self.proxy} -o '{title}.ts' {link} {self.quality}")
+            os.system(f"streamlink --hls-live-restart {self.proxy} -o '{title}.ts' {link} {self.quality}")
             break
         except:
             echo_log('Youtube| Download is broken. Retrying')
