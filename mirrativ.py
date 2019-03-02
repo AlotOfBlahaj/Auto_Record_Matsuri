@@ -16,6 +16,7 @@ class Mirrativ:
             self.proxy = proxy
         else:
             self.proxy = ''
+            self.dl_proxy = ''
 
     def live_info(self):
         l_info = json.loads(gethtml(f'https://www.mirrativ.com/api/user/profile?user_id={self.id}',

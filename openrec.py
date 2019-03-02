@@ -14,6 +14,7 @@ class Openrec:
             self.proxy = proxy
         else:
             self.proxy = ''
+            self.dl_proxy = ''
 
     def is_live(self):
         html = gethtml(f'https://www.openrec.tv/user/{self.oprec_id}', self.enable_proxy, self.proxy)
