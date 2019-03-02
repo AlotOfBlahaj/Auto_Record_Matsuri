@@ -62,12 +62,16 @@ def bot(host, group_id, message):
 
 def bd_upload(file):
     if 'nt' in name:
-        command = f'.\\BaiduPCS-Go\\BaiduPCS-Go.exe upload {ddir}/{file} /'
-        command2 = f'.\\BaiduPCS-GO\\BaiduPCS-Go.exe share set {file}'
+        command = [".\\BaiduPCS-Go\\BaiduPCS-Go.exe", "upload"]
+        command2 = [f'.\\BaiduPCS-GO\\BaiduPCS-Go.exe', "share", "set"]
     else:
-        command = f'BaiduPCS-Go/BaiduPCS-Go upload {ddir}/{file} /'
-        command2 = f'BaiduPCS-GO/BaiduPCS-Go share set {file}'
+        command = [f"BaiduPCS-Go/BaiduPCS-Go", "upload"]
+        command2 = [f'BaiduPCS-GO/BaiduPCS-Go', "share", "set"]
         # 此处一定要注明encoding
+
+    command.append(f"{ddir}/{file}")
+    command.append("/")
+    command2.append(file)
     s = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                          encoding='utf-8', shell=True, universal_newlines=True)
     s.communicate()
@@ -81,13 +85,13 @@ def bd_upload(file):
 
 def downloader(link, title, dl_proxy, quality='best'):
     while True:
-        try:
-            subprocess.run(
-                "streamlink --hls-live-restart --loglevel trace "
-                f"{dl_proxy} -o {ddir}/{title}.ts {link} {quality}")
-            # 不应该使用os.system
-            os.system(f"streamlink --hls-live-restart {self.proxy} -o '{title}.ts' {link} {self.quality}")
-            break
-        except:
-            echo_log('Youtube| Download is broken. Retrying')
-            sleep(sec_error)
+        co = ["streamlink", "--hls-live-restart", "--loglevel", "trace"]
+        if dl_proxy:
+            co.append(dl_proxy)
+        co.append("-o")
+        co.append(f"{ddir}/{title}.ts")
+        co.append(link)
+        co.append(quality)
+        subprocess.run(co)
+        # 不应该使用os.system
+        break
