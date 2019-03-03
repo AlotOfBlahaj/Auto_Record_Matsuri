@@ -3,7 +3,7 @@ import subprocess
 from urllib import request
 from time import strftime, localtime, time, sleep
 from os import getcwd, mkdir, name
-from config import ddir, sec_error, enable_bot
+from config import ddir, sec_error, enable_bot, enable_upload
 
 
 def gethtml(url, enable_proxy, proxy):
@@ -61,33 +61,37 @@ def bot(host, group_id, message):
 
 
 def bd_upload(file):
-    if 'nt' in name:
-        command = [".\\BaiduPCS-Go\\BaiduPCS-Go.exe", "upload"]
-        command2 = [f'.\\BaiduPCS-GO\\BaiduPCS-Go.exe', "share", "set"]
-    else:
-        command = [f"BaiduPCS-Go/BaiduPCS-Go", "upload"]
-        command2 = [f'BaiduPCS-GO/BaiduPCS-Go', "share", "set"]
-        # 此处一定要注明encoding
+    if enable_upload:
+        if 'nt' in name:
+            command = [".\\BaiduPCS-Go\\BaiduPCS-Go.exe", "upload"]
+            command2 = [f'.\\BaiduPCS-GO\\BaiduPCS-Go.exe', "share", "set"]
+        else:
+            command = [f"BaiduPCS-Go/BaiduPCS-Go", "upload"]
+            command2 = [f'BaiduPCS-GO/BaiduPCS-Go', "share", "set"]
+            # 此处一定要注明encoding
 
-    command.append(f"{ddir}/{file}")
-    command.append("/")
-    command2.append(file)
-    s = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                         encoding='utf-8', shell=True, universal_newlines=True)
-    s.communicate()
-    s.wait()
+        command.append(f"{ddir}/{file}")
+        command.append("/")
+        command2.append(file)
+        s = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             encoding='utf-8', shell=True, universal_newlines=True)
+        s.communicate()
+        s.wait()
 
-    s = subprocess.Popen(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                         encoding='utf-8', shell=True, universal_newlines=True)
-    line = s.stdout.readline()
-    return line
+        s = subprocess.Popen(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             encoding='utf-8', shell=True, universal_newlines=True)
+        line = s.stdout.readline()
+        return line
 
 
 def downloader(link, title, dl_proxy, quality='best'):
     while True:
         co = ["streamlink", "--hls-live-restart", "--loglevel", "trace"]
         if dl_proxy:
-            co.append(dl_proxy)
+            co.append('--http-proxy')
+            co.append(f'http://{dl_proxy}')
+            co.append('--https-proxy')
+            co.append(f'https://{dl_proxy}')
         co.append("-o")
         co.append(f"{ddir}/{title}.ts")
         co.append(link)

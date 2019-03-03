@@ -11,7 +11,7 @@ class Mirrativ:
         self.id = userid
         self.enable_proxy = enable_proxy
         if enable_proxy == 1:
-            self.dl_proxy = '--https-proxy ' + f'"http://{proxy}"'
+            self.dl_proxy = f'{proxy}'
             self.proxy = proxy
         else:
             self.proxy = ''

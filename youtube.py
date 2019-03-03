@@ -1,4 +1,5 @@
 import json
+import re
 import time
 from config import sec, host, group_id
 from tools import gethtml, echo_log, bot, bd_upload, downloader
@@ -14,7 +15,7 @@ class Youtube:
         # 代理设置
         if self.enable_proxy == 1:
             self.proxy = proxy
-            self.dl_proxy = '--https-proxy ' + f'"http://{proxy}"'
+            self.dl_proxy = f'{proxy}'
         else:
             self.proxy = ''
             self.dl_proxy = ''
@@ -34,8 +35,15 @@ class Youtube:
             vid = [x['id']['videoId'] for x in item]
             return vid
 
-    def getlive_vid(self):
-        vid = self.get_videoid_by_channel_id()
+    def get_temp_refvid(self, link):
+        reg = r"watch\?v=([A-Za-z0-9_-]{11})"
+        idre = re.compile(reg)
+        vid = [re.search(idre, link).group(1)]
+        is_live = self.getlive_vid(vid)
+        if is_live:
+            return is_live
+
+    def getlive_vid(self, vid):
         for x in vid:
             live_info = json.loads(gethtml(rf'https://www.googleapis.com/youtube/v3/videos?id={x}&key={self.api_key}&'
                                            r'part=liveStreamingDetails,snippet', self.enable_proxy, self.proxy))
@@ -50,13 +58,25 @@ class Youtube:
             if info_dict.get('Islive') == 'live':
                 return {'Title': info_dict['Title'],
                         'Ref': x}
+            elif info_dict.get('Islive') == 'upcoming':
+                echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                         f'{info_dict["Title"]} is upcoming, waiting to recheck')
             else:
                 echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                          f'{info_dict["Title"]} is not a live video')
 
     def judge(self):
-        if 'LIVE NOW' in self.html:
-            is_live = self.getlive_vid()
+        with open('./temp_ref.txt', 'r+') as file:
+            r = file.readlines()
+            if r:
+                for x in r:
+                    temp_refvid = self.get_temp_refvid(x)
+        if 'LIVE NOW' in self.html or temp_refvid:
+            if 'LIVE NOW' in self.html:
+                vid = self.get_videoid_by_channel_id()
+                is_live = self.getlive_vid(vid)
+            elif temp_refvid:
+                is_live = temp_refvid
             bot(host, group_id,
                 f"A live, {is_live.get('Title')}, is streaming. url:  https://www.youtube.com/watch?v={is_live['Ref']}")
             echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
