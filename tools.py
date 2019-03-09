@@ -68,8 +68,8 @@ def bd_upload(file):
             command = [".\\BaiduPCS-Go\\BaiduPCS-Go.exe", "upload"]
             command2 = [f'.\\BaiduPCS-GO\\BaiduPCS-Go.exe', "share", "set"]
         else:
-            command = [f"BaiduPCS-Go/BaiduPCS-Go", "upload"]
-            command2 = [f'BaiduPCS-GO/BaiduPCS-Go', "share", "set"]
+            command = [f"./BaiduPCS-Go/BaiduPCS-Go", "upload"]
+            command2 = [f'./BaiduPCS-GO/BaiduPCS-Go', "share", "set"]
             # 此处一定要注明encoding
 
         command.append(f"{ddir}/{file}")
@@ -82,9 +82,9 @@ def bd_upload(file):
         return line
 
 
-def downloader(link, title, dl_proxy, quality='best'):
+def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
     co = ["streamlink", "--hls-live-restart", "--loglevel", "trace", "--force"]
-    if dl_proxy:
+    if enable_proxy:
         co.append('--http-proxy')
         co.append(f'http://{dl_proxy}')
         co.append('--https-proxy')
@@ -103,9 +103,9 @@ def process_video(is_live, model):
              'Found A Live, starting downloader')
     if model == 'Youtube':
         downloader(r"https://www.youtube.com/watch?v=" + is_live['Ref'], is_live['Title'],
-                   proxy, quality)
+                   enable_proxy, proxy, quality)
     else:
-        downloader(is_live['Ref'], is_live['Title'], proxy)
+        downloader(is_live['Ref'], is_live['Title'], enable_proxy, proxy)
     echo_log(model + strftime("|%m-%d %H:%M:%S|", localtime(time())) +
              f"{is_live['Title']} was already downloaded")
     bot(f"{is_live['Title']} is already downloaded")
