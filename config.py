@@ -5,7 +5,7 @@ proxy = '127.0.0.1:10800'
 # 保存位置
 ddir = 'D:/Matsuri'  # 这里后边不应该有斜杠
 # YoutubeAPI3Key 申请地址：https://console.developers.google.com/apis/library/youtube.googleapis.com?q=Youtube&id=125bab65-cfb6-4f25-9826-4dcc309bc508
-api_key = 'AIzaSyCpAWtwitVKOWMqOXvyXrv5VC_WAu-y1Fg'
+api_key = ''
 # 监测频道ID
 channel_id = 'UCQ0UDLQCjY0rmuxCDE38FGg'  # UCQ0UDLQCjY0rmuxCDE38FGg
 # mirrativ用户ID
