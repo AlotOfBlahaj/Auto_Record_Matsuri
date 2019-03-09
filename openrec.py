@@ -1,23 +1,17 @@
-from tools import gethtml, echo_log, process_video
-from config import sec
 import time
+
 from lxml.html import etree
+
+from config import sec
+from tools import fetch_html, echo_log, process_video
 
 
 class Openrec:
-    def __init__(self, oprec_id, enable_proxy, proxy, ddir):
+    def __init__(self, oprec_id):
         self.oprec_id = oprec_id
-        self.enable_proxy = enable_proxy
-        self.ddir = ddir
-        if enable_proxy == 1:
-            self.dl_proxy = f'{proxy}'
-            self.proxy = proxy
-        else:
-            self.proxy = ''
-            self.dl_proxy = ''
 
     def is_live(self):
-        html = gethtml(f'https://www.openrec.tv/user/{self.oprec_id}', self.enable_proxy, self.proxy)
+        html = fetch_html(f'https://www.openrec.tv/user/{self.oprec_id}')
         dom = etree.HTML(html)
         is_live = dom.xpath('/html/body/div[1]/div[2]/div[18]/div[2]/div/div[3]/ul/li[1]/div/text()')[0]
         if 'Live' in is_live:

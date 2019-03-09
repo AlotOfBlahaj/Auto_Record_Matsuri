@@ -1,37 +1,26 @@
 import json
 import time
-from config import sec, host, group_id
-from tools import gethtml, echo_log, bot, process_video
+
+from config import sec
+from tools import fetch_html, echo_log, process_video
 
 
 class Mirrativ:
 
-    def __init__(self, userid, enable_proxy, proxy, ddir):
-        self.ddir = ddir
+    def __init__(self, userid):
         self.id = userid
-        self.enable_proxy = enable_proxy
-        if enable_proxy == 1:
-            self.dl_proxy = f'{proxy}'
-            self.proxy = proxy
-        else:
-            self.proxy = ''
-            self.dl_proxy = ''
 
     def live_info(self):
-        l_info = json.loads(gethtml(f'https://www.mirrativ.com/api/user/profile?user_id={self.id}',
-                                    self.enable_proxy, self.proxy))
+        l_info = json.loads(fetch_html(f'https://www.mirrativ.com/api/user/profile?user_id={self.id}'))
         nowlive = l_info['onlive']
         if nowlive:
             return nowlive['live_id']
 
     def get_hsl(self):
         live_id = self.live_info()
-        hsl_info = json.loads(gethtml(f'https://www.mirrativ.com/api/live/live?live_id={live_id}',
-                                      self.enable_proxy, self.proxy))
+        hsl_info = json.loads(fetch_html(f'https://www.mirrativ.com/api/live/live?live_id={live_id}'))
         title = hsl_info['shares']['twitter']['card']['title']
         steaming_url = hsl_info['streaming_url_hls']
-        bot(host, group_id, f'A live, {title}, is streaming. '
-        f'url:  https://www.mirrativ.com/api/live/live?live_id={live_id}')
         return {'Title': title,
                 'Ref': steaming_url}
 

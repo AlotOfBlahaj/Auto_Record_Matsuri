@@ -1,54 +1,45 @@
 import json
 import re
 import time
-import os
+
 from config import sec
-from tools import gethtml, echo_log, process_video
+from tools import fetch_html, echo_log, process_video, Database
 
 
 class Youtube:
 
-    def __init__(self, channel_id, enable_proxy, proxy, ddir, api_key, quality):
+    def __init__(self, channel_id, api_key, quality):
         self.channel_id = channel_id
         self.api_key = api_key
-        self.ddir = ddir
-        self.enable_proxy = enable_proxy
-        # 代理设置
-        if self.enable_proxy == 1:
-            self.proxy = proxy
-            self.dl_proxy = f'{proxy}'
-        else:
-            self.proxy = ''
-            self.dl_proxy = ''
         # 品质设置
         self.quality = quality
-        self.html = gethtml(f'https://www.youtube.com/channel/{self.channel_id}/featured',
-                            self.enable_proxy, self.proxy)
+        self.database = Database()
 
     # 关于SearchAPI的文档 https://developers.google.com/youtube/v3/docs/search/list
     def get_videoid_by_channel_id(self):
-        channel_info = json.loads(gethtml(rf'https://www.googleapis.com/youtube/v3/search?key={self.api_key}'
-                                          rf'&channelId={self.channel_id}&part=snippet,id&order=date&maxResults=5',
-                                          self.enable_proxy, self.proxy))
+        channel_info = json.loads(fetch_html(rf'https://www.googleapis.com/youtube/v3/search?key={self.api_key}'
+                                             rf'&channelId={self.channel_id}&part=snippet,id&order=date&maxResults=5'))
         # 判断获取的数据是否正确
         if channel_info['items']:
             item = channel_info['items']
             vid = [x['id']['videoId'] for x in item]
             return vid
 
-    def get_temp_refvid(self, link):
+    def get_temp_refvid(self, temp_ref):
         reg = r"watch\?v=([A-Za-z0-9_-]{11})"
         idre = re.compile(reg)
-        vid = [re.search(idre, link).group(1)]
-        is_live = self.getlive_vid(vid)
-        if is_live:
-            os.remove('./temp_ref.txt')
-            return is_live
+        for _id, _ref in temp_ref:
+            vid = [re.search(idre, _ref).group(1)]
+            is_live = self.getlive_vid(vid)
+            if is_live:
+                self.database.delete(_id)
+                return is_live
 
     def getlive_vid(self, vid):
         for x in vid:
-            live_info = json.loads(gethtml(rf'https://www.googleapis.com/youtube/v3/videos?id={x}&key={self.api_key}&'
-                                           r'part=liveStreamingDetails,snippet', self.enable_proxy, self.proxy))
+            live_info = json.loads(
+                fetch_html(rf'https://www.googleapis.com/youtube/v3/videos?id={x}&key={self.api_key}&'
+                           r'part=liveStreamingDetails,snippet'))
             # 判断视频是否正确
             if live_info['pageInfo']['totalResults'] != 1:
                 raise ValueError
@@ -68,26 +59,20 @@ class Youtube:
                          f'{info_dict["Title"]} is not a live video')
 
     def check(self):
-        try:
-            with open('./temp_ref.txt', 'r+') as file:
-                r = file.readlines()
-                if r:
-                    for x in r:
-                        temp_refvid = self.get_temp_refvid(x)
-                else:
-                    temp_refvid = ''
-        except FileNotFoundError:
-            with open('./temp_ref.txt', 'w'):
-                pass
-            temp_refvid = ''
-        if 'LIVE NOW' in self.html or temp_refvid:
-            if 'LIVE NOW' in self.html:
+        html = fetch_html(f'https://www.youtube.com/channel/{self.channel_id}/featured')
+        temp_ref = self.database.select()
+        if temp_ref:
+            temp_refvid = self.get_temp_refvid(temp_ref)
+        else:
+            temp_refvid = None
+        if 'LIVE NOW' in html or temp_refvid:
+            if 'LIVE NOW' in html:
                 vid = self.get_videoid_by_channel_id()
                 is_live = self.getlive_vid(vid)
-            elif temp_refvid:
+            else:
                 is_live = temp_refvid
             process_video(is_live, 'Youtube')
-        elif 'Upcoming live streams' in self.html:
+        elif 'Upcoming live streams' in html:
             echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                      f'Found A Live Upcoming, after {sec}s checking')
         else:
