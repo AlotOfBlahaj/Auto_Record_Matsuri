@@ -61,27 +61,23 @@ def bot(host, group_id, message):
 
 
 def bd_upload(file):
-    if enable_upload:
-        if 'nt' in name:
-            command = [".\\BaiduPCS-Go\\BaiduPCS-Go.exe", "upload"]
-            command2 = [f'.\\BaiduPCS-GO\\BaiduPCS-Go.exe', "share", "set"]
-        else:
-            command = [f"BaiduPCS-Go/BaiduPCS-Go", "upload"]
-            command2 = [f'BaiduPCS-GO/BaiduPCS-Go', "share", "set"]
-            # 此处一定要注明encoding
+    # if enable_upload:
+    if 'nt' in name:
+        command = [".\\BaiduPCS-Go\\BaiduPCS-Go.exe", "upload"]
+        command2 = [f'.\\BaiduPCS-GO\\BaiduPCS-Go.exe', "share", "set"]
+    else:
+        command = [f"BaiduPCS-Go/BaiduPCS-Go", "upload"]
+        command2 = [f'BaiduPCS-GO/BaiduPCS-Go', "share", "set"]
+        # 此处一定要注明encoding
 
-        command.append(f"{ddir}/{file}")
-        command.append("/")
-        command2.append(file)
-        s = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                             encoding='utf-8', shell=True, universal_newlines=True)
-        s.communicate()
-        s.wait()
-
-        s = subprocess.Popen(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                             encoding='utf-8', shell=True, universal_newlines=True)
-        line = s.stdout.readline()
-        return line
+    command.append(f"{ddir}/{file}")
+    command.append("/")
+    command2.append(file)
+    subprocess.run(command)
+    s = subprocess.run(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                       encoding='utf-8', universal_newlines=True)
+    line = s.stdout
+    return line
 
 
 def downloader(link, title, dl_proxy, quality='best'):
@@ -99,3 +95,21 @@ def downloader(link, title, dl_proxy, quality='best'):
         subprocess.run(co)
         # 不应该使用os.system
         break
+
+
+def process_video(is_live, model):
+    bot(host, group_id,
+        f"A live, {is_live.get('Title')}, is streaming. url:  https://www.youtube.com/watch?v={is_live['Ref']}")
+    echo_log(model + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+             'Found A Live, starting downloader')
+    if model == 'Youtube':
+        downloader(r"https://www.youtube.com/watch?v=" + is_live['Ref'], is_live['Title'],
+                   self.dl_proxy, self.quality)
+    else:
+        downloader(is_live['Ref'], is_live['Title'], self.dl_proxy)
+    echo_log(model + time.strftime("|%m-%d %H:%M:%S|", time.localtime(time.time())) +
+             f"{is_live['Title']} was already downloaded")
+    bot(host, group_id,
+        f"{is_live['Title']} is already downloaded")
+    share = bd_upload(f"{is_live['Title']}.ts")
+    bot(host, group_id, share)

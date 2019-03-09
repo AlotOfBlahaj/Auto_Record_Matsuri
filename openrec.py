@@ -1,5 +1,5 @@
-from tools import gethtml, echo_log, bot, bd_upload, downloader
-from config import host, group_id, sec
+from tools import gethtml, echo_log, process_video
+from config import sec
 import time
 from lxml.html import etree
 
@@ -29,12 +29,7 @@ class Openrec:
     def check(self):
         is_live = self.is_live()
         if is_live:
-            downloader(is_live['Ref'], is_live['Title'], self.dl_proxy)
-            echo_log('Openrec' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                     f"{is_live['title']} was already downloaded")
-            bot(host, group_id, f"{is_live['title']} is already downloaded")
-            share = bd_upload(f"{is_live['title']}.ts")
-            bot(host, group_id, share)
+            process_video(is_live, 'Openrec')
         else:
             echo_log('Openrec' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                      f'Not found Live, after {sec}s checking')

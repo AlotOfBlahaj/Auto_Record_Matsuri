@@ -1,7 +1,7 @@
 import json
 import time
 from config import sec, host, group_id
-from tools import gethtml, echo_log, bot, bd_upload, downloader
+from tools import gethtml, echo_log, bot, process_video
 
 
 class Mirrativ:
@@ -39,12 +39,7 @@ class Mirrativ:
         is_live = self.live_info()
         if is_live:
             is_live = self.get_hsl()
-            downloader(is_live['Ref'], is_live['Title'], self.dl_proxy)
-            echo_log('Mirrativ' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                     f"{is_live['Title']} was already downloaded")
-            bot(host, group_id, f"{is_live['Title']} is already downloaded")
-            share = bd_upload(f"{is_live['Title']}.ts")
-            bot(host, group_id, share)
+            process_video(is_live, 'Mirrativ')
         else:
             echo_log('Mirrativ' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                      f'Not found Live, after {sec}s checking')

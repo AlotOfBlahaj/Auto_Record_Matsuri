@@ -1,8 +1,9 @@
 import json
 import re
 import time
-from config import sec, host, group_id
-from tools import gethtml, echo_log, bot, bd_upload, downloader
+import os
+from config import sec
+from tools import gethtml, echo_log, process_video
 
 
 class Youtube:
@@ -41,6 +42,7 @@ class Youtube:
         vid = [re.search(idre, link).group(1)]
         is_live = self.getlive_vid(vid)
         if is_live:
+            os.remove('./temp_ref.txt')
             return is_live
 
     def getlive_vid(self, vid):
@@ -65,36 +67,29 @@ class Youtube:
                 echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                          f'{info_dict["Title"]} is not a live video')
 
-    def judge(self):
-        with open('./temp_ref.txt', 'r+') as file:
-            r = file.readlines()
-            if r:
-                for x in r:
-                    temp_refvid = self.get_temp_refvid(x)
+    def check(self):
+        try:
+            with open('./temp_ref.txt', 'r+') as file:
+                r = file.readlines()
+                if r:
+                    for x in r:
+                        temp_refvid = self.get_temp_refvid(x)
+                else:
+                    temp_refvid = ''
+        except FileNotFoundError:
+            with open('./temp_ref.txt', 'w'):
+                pass
+            temp_refvid = ''
         if 'LIVE NOW' in self.html or temp_refvid:
             if 'LIVE NOW' in self.html:
                 vid = self.get_videoid_by_channel_id()
                 is_live = self.getlive_vid(vid)
             elif temp_refvid:
                 is_live = temp_refvid
-            bot(host, group_id,
-                f"A live, {is_live.get('Title')}, is streaming. url:  https://www.youtube.com/watch?v={is_live['Ref']}")
-            echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                     'Found A Live, starting downloader')
-            downloader(r"https://www.youtube.com/watch?v=" + is_live['Ref'], is_live['Title'],
-                       self.dl_proxy, self.quality)
-            echo_log("Youtube" + time.strftime("|%m-%d %H:%M:%S|", time.localtime(time.time())) +
-                     f"{is_live['Title']} was already downloaded")
-            bot(host, group_id,
-                f"{is_live['Title']} is already downloaded")
-            share = bd_upload(f"{is_live['Title']}.ts")
-            bot(host, group_id, share)
+            process_video(is_live, 'Youtube')
         elif 'Upcoming live streams' in self.html:
             echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                      f'Found A Live Upcoming, after {sec}s checking')
         else:
             echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                      f'Not found Live, after {sec}s checking')
-
-    def check(self):
-        self.judge()
