@@ -1,4 +1,5 @@
 import json
+import re
 import sqlite3
 import subprocess
 from os import mkdir, name
@@ -110,6 +111,11 @@ def process_video(is_live, model):
              f"{is_live['Title']} was already downloaded")
     bot(f"{is_live['Title']} is already downloaded")
     share = bd_upload(f"{is_live['Title']}.ts")
+    reg = r'https://pan.baidu.com/s/([A-Za-z0-9_-]{23})'
+    linkre = re.compile(reg)
+    link = re.search(linkre, share).group(1)
+    database = Database()
+    database.insert(is_live['Title'], link)
     echo_log(share)
     bot(share)
 
@@ -128,4 +134,9 @@ class Database:
     def delete(self, _id):
         self.cursor.execute(f'DELETE FROM Youtube WHERE ID = {_id};')
         self.conn.commit()
-        echo_log(f"ID: {_id} has been delete")
+        echo_log(f"ID: {_id} has been deleted")
+
+    def insert(self, _title, _link):
+        self.cursor.execute(f"INSERT INTO StreamLink (ID, Title, Link) VALUES (NULL, f'{_title}', f'{_link}') ")
+        self.conn.commit()
+        echo_log(f"Link: {_link} has been inserted")

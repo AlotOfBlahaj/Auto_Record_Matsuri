@@ -15,12 +15,14 @@ def index():
     form = RefForm()
     cursor = g.db.execute("SELECT * FROM Youtube")
     data_current = cursor.fetchall()
+    cursor = g.db.execute("SELECT * FROM StreamLink")
+    url_current = cursor.fetchall()
     if form.validate_on_submit():
         ref = form.ref.data
         form.ref.data = ''
         cursor = g.db.execute(f"INSERT INTO Youtube (ID, REF) VALUES (NULL,'{ref}')")
         g.db.commit()
-    return render_template('index.html', form=form, ref=ref, data_current=data_current)
+    return render_template('index.html', form=form, ref=ref, data_current=data_current, url_current=url_current)
 
 
 class RefForm(FlaskForm):
@@ -52,5 +54,6 @@ def after_request(response):
     g.db.close()
     return response
 
-# if __name__ == '__main__':
-#     app.run()
+
+if __name__ == '__main__':
+    app.run()

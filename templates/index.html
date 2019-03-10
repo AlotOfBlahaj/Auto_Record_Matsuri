@@ -20,6 +20,7 @@
     {% endif %}
 </p>
 </body>
+<p>Queue<br></p>
 <body>
 <table border=2>
     <thead>
@@ -29,7 +30,24 @@
     {% for ref in data_current %}
         <tr>
             <td>{{ ref[0] }}</td>
+            <td><a href="url">{{ ref[1] }}</a></td>
+        </tr>
+    {% endfor %}
+</table>
+</body>
+<p>Past Stream<br></p>
+<body>
+<table border=2>
+    <thead>
+    <td>ID</td>
+    <td>Title</td>
+    <td>Link</td>
+    </thead>
+    {% for ref in url_current %}
+        <tr>
+            <td>{{ ref[0] }}</td>
             <td>{{ ref[1] }}</td>
+            <td><a href="url">{{ ref[2] }}</a></td>
         </tr>
     {% endfor %}
 </table>
