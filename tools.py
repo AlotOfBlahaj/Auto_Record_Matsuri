@@ -1,7 +1,7 @@
 import json
 import sqlite3
 import subprocess
-from os import getcwd, mkdir, name
+from os import mkdir, name
 from time import strftime, localtime, time, sleep
 from urllib import request
 
@@ -35,7 +35,7 @@ def echo_log(log):
     print(log)
     while True:
         try:
-            with open(getcwd() + rf"/log/log-{today}.log", 'a') as logs:
+            with open(rf"./log/log-{today}.log", 'a') as logs:
                 logs.write(log + "\n")
             break
         # 没有log文件夹的话就新建一个
@@ -66,10 +66,10 @@ def bd_upload(file):
     if enable_upload:
         if 'nt' in name:
             command = [".\\BaiduPCS-Go\\BaiduPCS-Go.exe", "upload"]
-            command2 = [f'.\\BaiduPCS-GO\\BaiduPCS-Go.exe', "share", "set"]
+            command2 = ['.\\BaiduPCS-GO\\BaiduPCS-Go.exe', "share", "set"]
         else:
-            command = [f"./BaiduPCS-Go/BaiduPCS-Go", "upload"]
-            command2 = [f'./BaiduPCS-GO/BaiduPCS-Go', "share", "set"]
+            command = ["./BaiduPCS-Go/BaiduPCS-Go", "upload"]
+            command2 = ['./BaiduPCS-GO/BaiduPCS-Go', "share", "set"]
             # 此处一定要注明encoding
 
         command.append(f"{ddir}/{file}")

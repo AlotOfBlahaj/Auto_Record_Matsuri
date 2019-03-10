@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ref_input</title>
+</head>
+<body>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    {{ form.ref.label }} {{ form.ref(id='my-text-field') }}
+    {{ form.submit() }}
+</form>
+<p>Result：
+    {% if ref %}
+        Done!
+    {% else %}
+        {% if form.ref.errors %}
+            {{ form.ref.errors }}
+        {% endif %}
+    {% endif %}
+</p>
+</body>
+<body>
+<table border=2>
+    <thead>
+    <td>ID</td>
+    <td>Link</td>
+    </thead>
+    {% for ref in data_current %}
+        <tr>
+            <td>{{ ref[0] }}</td>
+            <td>{{ ref[1] }}</td>
+        </tr>
+    {% endfor %}
+</table>
+</body>
+</html>
