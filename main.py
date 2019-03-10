@@ -25,6 +25,10 @@ class Localtimer:
         self.y.check()
         await asyncio.sleep(sec)
 
+    async def youtube_temp_timer(self):
+        self.y.check_temp()
+        await asyncio.sleep(75)
+
     async def mirrativ_timer(self):
         self.m.check()
         await asyncio.sleep(sec)
@@ -39,12 +43,14 @@ async def main():
     t = Localtimer()
     if enable_youtube:
         task_y = asyncio.create_task(t.youtube_timer())
+        task_y_temp = asyncio.create_task(t.youtube_temp_timer())
     if enable_mirrativ:
         task_m = asyncio.create_task(t.mirrativ_timer())
     if enable_openrec:
         task_o = asyncio.create_task(t.openrec_timer())
     if enable_youtube:
         await task_y
+        await task_y_temp
     if enable_mirrativ:
         await task_m
     if enable_openrec:

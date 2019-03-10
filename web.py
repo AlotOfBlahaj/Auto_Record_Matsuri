@@ -1,7 +1,7 @@
 import sqlite3
 
 from flask import Flask, render_template, g
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import ValidationError, URL
 
@@ -23,7 +23,7 @@ def index():
     return render_template('index.html', form=form, ref=ref, data_current=data_current)
 
 
-class RefForm(Form):
+class RefForm(FlaskForm):
     ref = StringField('Please input stream link', validators=[URL])
     submit = SubmitField('Submit')
 
@@ -52,6 +52,5 @@ def after_request(response):
     g.db.close()
     return response
 
-
-if __name__ == '__main__':
-    app.run()
+# if __name__ == '__main__':
+#     app.run()

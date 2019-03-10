@@ -60,17 +60,9 @@ class Youtube:
 
     def check(self):
         html = fetch_html(f'https://www.youtube.com/channel/{self.channel_id}/featured')
-        temp_ref = self.database.select()
-        if temp_ref:
-            temp_refvid = self.get_temp_refvid(temp_ref)
-        else:
-            temp_refvid = None
-        if 'LIVE NOW' in html or temp_refvid:
-            if 'LIVE NOW' in html:
-                vid = self.get_videoid_by_channel_id()
-                is_live = self.getlive_vid(vid)
-            else:
-                is_live = temp_refvid
+        if 'LIVE NOW' in html:
+            vid = self.get_videoid_by_channel_id()
+            is_live = self.getlive_vid(vid)
             process_video(is_live, 'Youtube')
         elif 'Upcoming live streams' in html:
             echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
@@ -78,3 +70,13 @@ class Youtube:
         else:
             echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                      f'Not found Live, after {sec}s checking')
+
+    def check_temp(self):
+        temp_ref = self.database.select()
+        if temp_ref:
+            temp_refvid = self.get_temp_refvid(temp_ref)
+            is_live = temp_refvid
+            process_video(is_live, 'Youtube')
+        else:
+            echo_log('Youtube|temp' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                     f'Not found Live, after 75s checking')
