@@ -30,7 +30,7 @@
     {% for ref in data_current %}
         <tr>
             <td>{{ ref[0] }}</td>
-            <td><a href="url">{{ ref[1] }}</a></td>
+            <td><a href="{{ ref[1] }}">{{ ref[1] }}</a></td>
         </tr>
     {% endfor %}
 </table>
@@ -47,7 +47,7 @@
         <tr>
             <td>{{ ref[0] }}</td>
             <td>{{ ref[1] }}</td>
-            <td><a href="url">{{ ref[2] }}</a></td>
+            <td><a href="{{ ref[2] }}">Link</a></td>
         </tr>
     {% endfor %}
 </table>
