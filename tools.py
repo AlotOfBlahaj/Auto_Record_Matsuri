@@ -26,6 +26,10 @@ def fetch_html(url):
     return html
 
 
+def fetch_html_requests(url):
+    pass
+
+
 def m_error(msg):
     echo_log(f'{msg}. After {sec_error}s retrying')
     sleep(sec_error)
@@ -70,7 +74,7 @@ def bd_upload(file):
             command2 = ['.\\BaiduPCS-GO\\BaiduPCS-Go.exe', "share", "set"]
         else:
             command = ["./BaiduPCS-Go/BaiduPCS-Go", "upload"]
-            command2 = ['./BaiduPCS-GO/BaiduPCS-Go', "share", "set"]
+            command2 = ["./BaiduPCS-Go/BaiduPCS-Go", "share", "set"]
             # 此处一定要注明encoding
 
         command.append(f"{ddir}/{file}")
@@ -78,7 +82,7 @@ def bd_upload(file):
         command2.append(file)
         subprocess.run(command)
         s = subprocess.run(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                           encoding='utf-8', universal_newlines=True)
+                           encoding='utf-8')
         line = s.stdout
         return line
 
@@ -115,7 +119,7 @@ def process_video(is_live, model):
     linkre = re.compile(reg)
     link = re.search(linkre, share).group(1)
     database = Database()
-    database.insert(is_live['Title'], link)
+    database.insert(is_live['Title'], 'https://pan.baidu.com/s/' + link)
     echo_log(share)
     bot(share)
 
@@ -137,6 +141,6 @@ class Database:
         echo_log(f"ID: {_id} has been deleted")
 
     def insert(self, _title, _link):
-        self.cursor.execute(f"INSERT INTO StreamLink (ID, Title, Link) VALUES (NULL, f'{_title}', f'{_link}') ")
+        self.cursor.execute(f"INSERT INTO StreamLink (ID, Title, Link) VALUES (NULL, '{_title}', '{_link}');")
         self.conn.commit()
         echo_log(f"Link: {_link} has been inserted")
