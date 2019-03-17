@@ -22,10 +22,10 @@ class Aio:
         if enable_proxy:
             async with self.session:
                 async with self.session.get(url, proxy=f'http://{proxy}', headers=fake_headers) as response:
-                    return await response.text()
+                    return await response.text(encoding='utf-8')
         else:
             async with self.session:
-                async with self.session.get(url) as response:
+                async with self.session.get(url, headers=fake_headers) as response:
                     return await response.text()
 
     async def post(self, url, _json, headers):
