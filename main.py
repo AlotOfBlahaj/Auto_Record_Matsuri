@@ -21,41 +21,27 @@ class Localtimer:
         if enable_openrec:
             self.o = Openrec(oprec_id)
 
-    async def youtube_timer(self):
-        self.y.check()
-        await asyncio.sleep(sec)
-
-    async def youtube_temp_timer(self):
-        self.y.check_temp()
-        await asyncio.sleep(75)
-
-    async def mirrativ_timer(self):
-        self.m.check()
-        await asyncio.sleep(sec)
-
-    async def openrec_timer(self):
-        self.o.check()
-        await asyncio.sleep(sec)
+    async def check_main(self):
+        task = []
+        if enable_youtube:
+            task_y = asyncio.create_task(self.y.check())
+            task_y_temp = asyncio.create_task(self.y.check_temp())
+            task.append(task_y)
+            task.append(task_y_temp)
+        if enable_mirrativ:
+            task_m = asyncio.create_task(self.m.check())
+            task.append(task_m)
+        if enable_openrec:
+            task_o = asyncio.create_task(self.o.check())
+            task.append(task_o)
+        await asyncio.wait(task)
 
 
 # 这个异步功能有限，考虑在每个模块请求IO时也加入异步处理
 async def main():
     t = Localtimer()
-    if enable_youtube:
-        task_y = asyncio.create_task(t.youtube_timer())
-        task_y_temp = asyncio.create_task(t.youtube_temp_timer())
-    if enable_mirrativ:
-        task_m = asyncio.create_task(t.mirrativ_timer())
-    if enable_openrec:
-        task_o = asyncio.create_task(t.openrec_timer())
-    if enable_youtube:
-        await task_y
-        await task_y_temp
-    if enable_mirrativ:
-        await task_m
-    if enable_openrec:
-        await task_o
-    del t
+    await t.check_main()
+    await asyncio.sleep(sec)
 
 
 if __name__ == '__main__':
