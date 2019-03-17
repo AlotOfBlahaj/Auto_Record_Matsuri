@@ -38,6 +38,8 @@ class RefForm(FlaskForm):
                 raise ValidationError("Error: The link has existed")
         if 'www.youtube.com/watch?v=' not in data:
             raise ValidationError("Error: You need to input a Youtube LIVE link")
+        if 'https://' not in data:
+            raise ValidationError("Error: You need to input a link with 'https://'")
 
 
 def connect_db():
