@@ -20,15 +20,18 @@ class Aio:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101 Firefox/60.0',
         }
         if enable_proxy:
-            async with self.session.get(url, proxy=f'http://{proxy}', headers=fake_headers) as response:
-                return await response.text()
+            async with self.session:
+                async with self.session.get(url, proxy=f'http://{proxy}', headers=fake_headers) as response:
+                    return await response.text()
         else:
-            async with self.session.get(url) as response:
-                return await response.text()
+            async with self.session:
+                async with self.session.get(url) as response:
+                    return await response.text()
 
     async def post(self, url, _json, headers):
-        async with self.session.post(url, data=_json, headers=headers):
-            pass
+        async with self.session:
+            async with self.session.post(url, data=_json, headers=headers):
+                pass
     # if enable_proxy == 1:
     #     proxy_support = request.ProxyHandler({'http': '%s' % proxy, 'https': '%s' % proxy})
     #     opener = request.build_opener(proxy_support)
