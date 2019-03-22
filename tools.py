@@ -12,26 +12,31 @@ from config import ddir, sec_error, enable_bot, enable_upload, host, group_id, q
 
 class Aio:
     def __init__(self):
-        self.session = aiohttp.ClientSession()
+        pass
 
-    async def fetch_html(self, url):
+    async def main(self, url, method, **kw):
+        async with aiohttp.ClientSession() as session:
+            if method == "get":
+                return await self.fetch_html(session, url)
+            elif method == "post":
+
+                return await self.post(session, url, kw['msg'], kw['headers'])
+
+    async def fetch_html(self, session, url):
         fake_headers = {
             'Accept-Language': 'en-US,en;q=0.8',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101 Firefox/60.0',
         }
         if enable_proxy:
-            async with self.session:
-                async with self.session.get(url, proxy=f'http://{proxy}', headers=fake_headers) as response:
-                    return await response.text(encoding='utf-8')
+            async with session.get(url, proxy=f'http://{proxy}', headers=fake_headers) as response:
+                return await response.text(encoding='utf-8')
         else:
-            async with self.session:
-                async with self.session.get(url, headers=fake_headers) as response:
-                    return await response.text()
+            async with session.get(url, headers=fake_headers) as response:
+                return await response.text()
 
-    async def post(self, url, _json, headers):
-        async with self.session:
-            async with self.session.post(url, data=_json, headers=headers):
-                pass
+    async def post(self, session, url, _json, headers):
+        async with session.post(url, data=_json, headers=headers):
+            pass
     # if enable_proxy == 1:
     #     proxy_support = request.ProxyHandler({'http': '%s' % proxy, 'https': '%s' % proxy})
     #     opener = request.build_opener(proxy_support)
@@ -82,7 +87,7 @@ async def bot(message):
         }
         msg = json.dumps(_msg).encode('utf-8')
         net = Aio()
-        await net.post(f'http://{host}/send_group_msg', headers=headers, _json=msg)
+        await net.main(f'http://{host}/send_group_msg', method='post', headers=headers, msg=msg)
         # req = (f'http://{host}/send_group_msg', headers=headers, data=msg)
         # request.urlopen(req)
 
@@ -123,7 +128,7 @@ def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
 
 
 async def process_video(is_live, model):
-    await bot(f"A live, {is_live.get('Title')}, is streaming. url:  https://www.youtube.com/watch?v={is_live['Ref']}")
+    await bot(f"[直播提示] {is_live.get('Title')} 正在直播 链接: https://www.youtube.com/watch?v={is_live['Ref']}")
     echo_log(model + strftime('|%m-%d %H:%M:%S|', localtime(time())) +
              'Found A Live, starting downloader')
     if model == 'Youtube':
@@ -133,7 +138,7 @@ async def process_video(is_live, model):
         downloader(is_live['Ref'], is_live['Title'], enable_proxy, proxy)
     echo_log(model + strftime("|%m-%d %H:%M:%S|", localtime(time())) +
              f"{is_live['Title']} was already downloaded")
-    await bot(f"{is_live['Title']} is already downloaded")
+    await bot(f"[下载提示] {is_live['Title']} 已下载完成，等待上传")
     share = bd_upload(f"{is_live['Title']}.ts")
     reg = r'https://pan.baidu.com/s/([A-Za-z0-9_-]{23})'
     linkre = re.compile(reg)
@@ -152,8 +157,7 @@ class Database:
     def select(self):
         self.cursor.execute('SELECT ID,REF FROM Youtube')
         values = self.cursor.fetchall()
-        if values:
-            return values
+        return values
 
     def delete(self, _id):
         self.cursor.execute(f'DELETE FROM Youtube WHERE ID = {_id};')

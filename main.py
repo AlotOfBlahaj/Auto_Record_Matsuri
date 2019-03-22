@@ -15,25 +15,29 @@ class Localtimer:
 
     def __init__(self):
         if enable_youtube:
-            self.y = Youtube(channel_id, api_key, quality)
+            self.y = Youtube(api_key, quality)
+            self.y_t = Youtube(api_key, quality)
         if enable_mirrativ:
-            self.m = Mirrativ(userid)
+            self.m = Mirrativ()
         if enable_openrec:
-            self.o = Openrec(oprec_id)
+            self.o = Openrec()
 
     async def check_main(self):
         task = []
         if enable_youtube:
-            task_y = asyncio.create_task(self.y.check())
-            task_y_temp = asyncio.create_task(self.y.check_temp())
-            task.append(task_y)
+            for x in channel_id:
+                task_y = asyncio.create_task(self.y.check(x))
+                task.append(task_y)
+            task_y_temp = asyncio.create_task(self.y_t.check_temp())
             task.append(task_y_temp)
         if enable_mirrativ:
-            task_m = asyncio.create_task(self.m.check())
-            task.append(task_m)
+            for x in userid:
+                task_m = asyncio.create_task(self.m.check(x))
+                task.append(task_m)
         if enable_openrec:
-            task_o = asyncio.create_task(self.o.check())
-            task.append(task_o)
+            for x in oprec_id:
+                task_o = asyncio.create_task(self.o.check(x))
+                task.append(task_o)
         await asyncio.wait(task)
 
 

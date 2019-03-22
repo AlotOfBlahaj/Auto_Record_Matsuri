@@ -6,12 +6,12 @@ proxy = '127.0.0.1:10800'
 ddir = '/root/Matsuri'  # 这里后边不应该有斜杠
 # YoutubeAPI3Key 申请地址：https://console.developers.google.com/apis/library/youtube.googleapis.com?q=Youtube&id=125bab65-cfb6-4f25-9826-4dcc309bc508&project=youtube-streaming-231512
 api_key = ''
-# 监测频道ID
-channel_id = 'UCQ0UDLQCjY0rmuxCDE38FGg'  # UCQ0UDLQCjY0rmuxCDE38FGg
+# 监测频道ID 可填入多个频道，格式为['第一个地址', '第二个地址']
+channel_id = ['UCQ0UDLQCjY0rmuxCDE38FGg']  # UCQ0UDLQCjY0rmuxCDE38FGg
 # mirrativ用户ID
-userid = '3264432'  # 3264432
+userid = ['3264432']  # 3264432
 # Openrec用户ID
-oprec_id = 'natsuiromatsuri'  # natsuiromatsuri
+oprec_id = ['natsuiromatsuri']  # natsuiromatsuri
 # 检测间隔时间（s）
 sec = 15
 # 错误间隔时间（s）
@@ -31,4 +31,4 @@ host = '127.0.0.1:5700'
 # 要发送消息的QQ群号，暂时不支持多群
 group_id = ''
 # 是否自动上传百度云
-enable_upload = 0
+enable_upload = 1

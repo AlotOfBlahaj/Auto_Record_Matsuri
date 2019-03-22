@@ -8,8 +8,8 @@ from tools import Aio, echo_log, process_video, Database
 
 class Youtube:
 
-    def __init__(self, channel_id, api_key, quality):
-        self.channel_id = channel_id
+    def __init__(self, api_key, quality):
+        # self.channel_id = channel_id
         self.api_key = api_key
         # 品质设置
         self.quality = quality
@@ -17,11 +17,11 @@ class Youtube:
         self.Aio = Aio()
 
     # 关于SearchAPI的文档 https://developers.google.com/youtube/v3/docs/search/list
-    async def get_videoid_by_channel_id(self):
+    async def get_videoid_by_channel_id(self, channel_id):
         channel_info = json.loads(
-            await self.Aio.fetch_html(rf'https://www.googleapis.com/youtube/v3/search?part=snippet&'
-                                      rf'channelId={self.channel_id}&eventType=live&maxResults=1&type=video&'
-                                      rf'key={self.api_key}'))
+            await self.Aio.main(rf'https://www.googleapis.com/youtube/v3/search?part=snippet&'
+                                rf'channelId={channel_id}&eventType=live&maxResults=1&type=video&'
+                                rf'key={self.api_key}', "get"))
         # 判断获取的数据是否正确
         if channel_info['items']:
             item = channel_info['items'][0]
@@ -35,7 +35,7 @@ class Youtube:
         idre = re.compile(reg)
         for _id, _ref in temp_ref:
             vid = re.search(idre, _ref).group(1)
-            html = await self.Aio.fetch_html("https://www.youtube.com/watch?v=" f"{vid}")
+            html = await self.Aio.main("https://www.youtube.com/watch?v=" f"{vid}", "get")
             if '"isLive":true' in html:
                 is_live = self.getlive_title([vid])
                 # is_live = self.getlive_vid(vid)
@@ -46,8 +46,8 @@ class Youtube:
     async def getlive_title(self, vid):
         for x in vid:
             live_info = json.loads(
-                await self.Aio.fetch_html(rf'https://www.googleapis.com/youtube/v3/videos?id={x}&key={self.api_key}&'
-                                          r'part=liveStreamingDetails,snippet'))
+                await self.Aio.main(rf'https://www.googleapis.com/youtube/v3/videos?id={x}&key={self.api_key}&'
+                                    r'part=liveStreamingDetails,snippet', "get"))
             # 判断视频是否正确
             if live_info['pageInfo']['totalResults'] != 1:
                 raise ValueError
@@ -57,12 +57,12 @@ class Youtube:
             return {'Title': title,
                     'Ref': x}
 
-    async def check(self):
-        html = await self.Aio.fetch_html(f'https://www.youtube.com/channel/{self.channel_id}/featured')
+    async def check(self, channel_id):
+        html = await self.Aio.main(f'https://www.youtube.com/channel/{channel_id}/featured', "get")
         if '"label":"LIVE NOW"' in html:
             # vid = self.get_videoid_by_channel_id()
             # is_live = self.getlive_vid(vid)
-            is_live = await self.get_videoid_by_channel_id()
+            is_live = await self.get_videoid_by_channel_id(channel_id)
             await process_video(is_live, 'Youtube')
         elif 'Upcoming live streams' in html:
             echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
@@ -76,7 +76,8 @@ class Youtube:
         if temp_ref:
             temp_refvid = await self.get_temp_refvid(temp_ref)
             is_live = temp_refvid
-            await process_video(is_live, 'Youtube')
+            if is_live:
+                await process_video(is_live, 'Youtube')
         else:
             echo_log('Youtube|temp' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                     f'Not found Live, after 75s checking')
+                     f'Not found Live, after {sec}s checking')
