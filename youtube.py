@@ -36,12 +36,15 @@ class Youtube:
         for _id, _ref in temp_ref:
             vid = re.search(idre, _ref).group(1)
             html = await self.Aio.main("https://www.youtube.com/watch?v=" f"{vid}", "get")
-            if '"isLive":true' in html:
-                is_live = self.getlive_title([vid])
+            if r'"isLive\":true' in html:
+                is_live = await self.getlive_title([vid])
                 # is_live = self.getlive_vid(vid)
                 if is_live:
                     self.database.delete(_id)
                     return is_live
+            else:
+                echo_log('Youtube|temp' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
+                         f'Not found Live, after {sec}s checking')
 
     async def getlive_title(self, vid):
         for x in vid:
@@ -80,4 +83,4 @@ class Youtube:
                 await process_video(is_live, 'Youtube')
         else:
             echo_log('Youtube|temp' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                     f'Not found Live, after {sec}s checking')
+                     f'Queue is empty, after {sec}s checking')

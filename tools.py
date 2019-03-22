@@ -146,7 +146,7 @@ async def process_video(is_live, model):
     database = Database()
     database.insert(is_live['Title'], 'https://pan.baidu.com/s/' + link)
     echo_log(share)
-    await bot(share)
+    await bot(f"[下载提示] {is_live['Title']} 已上传" + share)
 
 
 class Database:
