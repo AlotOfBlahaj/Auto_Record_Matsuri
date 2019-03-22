@@ -29,6 +29,6 @@ enable_bot = 0
 # 酷Q机器人HTTPAPI接口
 host = '127.0.0.1:5700'
 # 要发送消息的QQ群号，暂时不支持多群
-group_id = ''
+group_id = ['']
 # 是否自动上传百度云
 enable_upload = 1

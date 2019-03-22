@@ -81,13 +81,14 @@ async def bot(message):
         headers = {'Content-Type': 'application/json'}
         # 将消息输入dict再转为json
         # 此处不应该直接使用HTTP GET的方式传入数据
-        _msg = {
-            'group_id': group_id,
-            'message': message
-        }
-        msg = json.dumps(_msg).encode('utf-8')
-        net = Aio()
-        await net.main(f'http://{host}/send_group_msg', method='post', headers=headers, msg=msg)
+        for _group_id in group_id:
+            _msg = {
+                'group_id': _group_id,
+                'message': message
+            }
+            msg = json.dumps(_msg).encode('utf-8')
+            net = Aio()
+            await net.main(f'http://{host}/send_group_msg', method='post', headers=headers, msg=msg)
         # req = (f'http://{host}/send_group_msg', headers=headers, data=msg)
         # request.urlopen(req)
 
