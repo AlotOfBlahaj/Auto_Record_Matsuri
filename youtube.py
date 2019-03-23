@@ -26,6 +26,7 @@ class Youtube:
         if channel_info['items']:
             item = channel_info['items'][0]
             title = item['snippet']['title']
+            title = title.replace("/", " ")
             vid = item['id']['videoId']
             return {'Title': title,
                     'Ref': vid}
@@ -57,6 +58,7 @@ class Youtube:
             # JSON中的数组将被转换为列表，此处使用[0]获得其中的数据
             item = live_info['items'][0]
             title = item['snippet']['title']
+            title = title.replace('/', '|')
             return {'Title': title,
                     'Ref': x}
 

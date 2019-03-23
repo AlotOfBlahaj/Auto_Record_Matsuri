@@ -1,3 +1,4 @@
+import asyncio
 import json
 import re
 import sqlite3
@@ -93,7 +94,7 @@ async def bot(message):
         # request.urlopen(req)
 
 
-def bd_upload(file):
+async def bd_upload(file):
     if enable_upload:
         if 'nt' in name:
             command = [".\\BaiduPCS-Go\\BaiduPCS-Go.exe", "upload"]
@@ -106,14 +107,31 @@ def bd_upload(file):
         command.append(f"{ddir}/{file}")
         command.append("/")
         command2.append(file)
-        subprocess.run(command)
-        s = subprocess.run(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                           encoding='utf-8')
-        line = s.stdout
+        s1 = subprocess.Popen(command)
+        while True:
+            s1_code = s1.poll()
+            if s1_code == 1:
+                break
+            elif s1_code == 0:
+                raise IOError
+            else:
+                await asyncio.sleep(30)
+        s2 = subprocess.Popen(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                              encoding='utf-8')
+        while True:
+            s2_code = s2.poll()
+            if s2_code == 1:
+                break
+            elif s2_code == 0:
+                raise IOError
+            else:
+                echo_log('Uploading...')
+                await asyncio.sleep(30)
+        line = s2.stdout
         return line
 
 
-def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
+async def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
     co = ["streamlink", "--hls-live-restart", "--loglevel", "trace", "--force"]
     if enable_proxy:
         co.append('--http-proxy')
@@ -124,7 +142,17 @@ def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
     co.append(f"{ddir}/{title}.ts")
     co.append(link)
     co.append(quality)
-    subprocess.run(co)
+    s = subprocess.Popen(co)
+    while True:
+        s_code = s.poll()
+        if s_code == 1:
+            break
+        elif s_code == 0:
+            raise IOError
+        else:
+            echo_log('Downloading...')
+            await asyncio.sleep(30)
+    # subprocess.run(co)
     # 不应该使用os.system
 
 
@@ -133,14 +161,14 @@ async def process_video(is_live, model):
     echo_log(model + strftime('|%m-%d %H:%M:%S|', localtime(time())) +
              'Found A Live, starting downloader')
     if model == 'Youtube':
-        downloader(r"https://www.youtube.com/watch?v=" + is_live['Ref'], is_live['Title'],
-                   enable_proxy, proxy, quality)
+        await downloader(r"https://www.youtube.com/watch?v=" + is_live['Ref'], is_live['Title'],
+                         enable_proxy, proxy, quality)
     else:
-        downloader(is_live['Ref'], is_live['Title'], enable_proxy, proxy)
+        await downloader(is_live['Ref'], is_live['Title'], enable_proxy, proxy)
     echo_log(model + strftime("|%m-%d %H:%M:%S|", localtime(time())) +
              f"{is_live['Title']} was already downloaded")
     await bot(f"[下载提示] {is_live['Title']} 已下载完成，等待上传")
-    share = bd_upload(f"{is_live['Title']}.ts")
+    share = await bd_upload(f"{is_live['Title']}.ts")
     reg = r'https://pan.baidu.com/s/([A-Za-z0-9_-]{23})'
     linkre = re.compile(reg)
     link = re.search(linkre, share).group(1)

@@ -41,7 +41,6 @@ class Localtimer:
         await asyncio.wait(task)
 
 
-# 这个异步功能有限，考虑在每个模块请求IO时也加入异步处理
 async def main():
     t = Localtimer()
     await t.check_main()
@@ -54,3 +53,7 @@ if __name__ == '__main__':
             asyncio.run(main())
         except error.URLError:
             m_error('URL error!')
+        except AttributeError:
+            m_error('AttributeError!')
+        except IOError:
+            m_error('Download was broken!')
