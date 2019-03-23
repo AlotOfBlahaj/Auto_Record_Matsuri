@@ -26,9 +26,12 @@ class Youtube:
         if channel_info['items']:
             item = channel_info['items'][0]
             title = item['snippet']['title']
+            title = title.replace("/", " ")
             vid = item['id']['videoId']
             return {'Title': title,
                     'Ref': vid}
+        else:
+            raise ValueError
 
     async def get_temp_refvid(self, temp_ref):
         reg = r"watch\?v=([A-Za-z0-9_-]{11})"
@@ -57,6 +60,7 @@ class Youtube:
             # JSON中的数组将被转换为列表，此处使用[0]获得其中的数据
             item = live_info['items'][0]
             title = item['snippet']['title']
+            title = title.replace('/', '|')
             return {'Title': title,
                     'Ref': x}
 
