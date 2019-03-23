@@ -30,6 +30,8 @@ class Youtube:
             vid = item['id']['videoId']
             return {'Title': title,
                     'Ref': vid}
+        else:
+            raise ValueError
 
     async def get_temp_refvid(self, temp_ref):
         reg = r"watch\?v=([A-Za-z0-9_-]{11})"
