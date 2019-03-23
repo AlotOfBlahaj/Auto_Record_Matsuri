@@ -1,6 +1,6 @@
 import sqlite3
 
-from flask import Flask, render_template, g
+from flask import Flask, render_template, g, redirect
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import ValidationError, URL
@@ -22,11 +22,19 @@ def index():
         form.ref.data = ''
         cursor = g.db.execute(f"INSERT INTO Youtube (ID, REF) VALUES (NULL,'{ref}')")
         g.db.commit()
+        return redirect('/')
     return render_template('index.html', form=form, ref=ref, data_current=data_current, url_current=url_current)
 
 
+@app.route('/delete/<_id>')
+def delete(_id):
+    cursor = g.db.execute(f'DELETE FROM Youtube WHERE ID = {_id}')
+    g.db.commit()
+    return redirect('/')
+
+
 class RefForm(FlaskForm):
-    ref = StringField('Please input stream link', validators=[URL])
+    ref = StringField('', validators=[URL])
     submit = SubmitField('Submit')
 
     def validate_ref(self, field):
@@ -56,5 +64,6 @@ def after_request(response):
     g.db.close()
     return response
 
-# if __name__ == '__main__':
-#     app.run(host="0.0.0.0", debug=True)
+
+if __name__ == '__main__':
+    app.run(debug=True)

@@ -1,18 +1,27 @@
+<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>夏色まつり　Unofficial fans website</title>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 <body>
+<div class="page-header">
+    <h1>夏色まつり
+        <small>Unofficial fans website</small>
+    </h1>
+</div>
 <form method="POST">
     {{ form.hidden_tag() }}
-    {{ form.ref.label }} {{ form.ref(id='my-text-field') }}
-    {{ form.submit() }}
+    {{ form.ref.label }} {{ form.ref(class="form-control col-sm-5", placeholder="请输入形如 https://www.youtube.com/watch?v=vrwSrCr9J4s的网址") }}
+    {{ form.submit(class="btn btn-primary",type="submit") }}
 </form>
-<p>Result：
+<p>操作状态：
     {% if ref %}
-        Done!
+        已成功添加，请刷新网页查看
     {% else %}
         {% if form.ref.errors %}
             {{ form.ref.errors }}
@@ -20,36 +29,47 @@
     {% endif %}
 </p>
 </body>
-<p>Queue<br></p>
+<p>补充检测队列<br></p>
 <body>
-<table border=2>
+<table class="table table-hover table-bordered">
     <thead>
     <td>ID</td>
-    <td>Link</td>
+    <td>链接</td>
+    <td>操作</td>
     </thead>
     {% for ref in data_current %}
         <tr>
             <td>{{ ref[0] }}</td>
             <td><a href="{{ ref[1] }}">{{ ref[1] }}</a></td>
+            <td><a class="btn btn-default btn btn-danger" href="delete/{{ ref[0] }}">删除</a></td>
         </tr>
     {% endfor %}
 </table>
 </body>
-<p>Past Stream<br></p>
+<p>已完成的直播<br></p>
 <body>
-<table border=2>
+<table class="table table-hover table-bordered">
     <thead>
     <td>ID</td>
-    <td>Title</td>
-    <td>Link</td>
+    <td>视频名称</td>
+    <td>下载</td>
     </thead>
     {% for ref in url_current %}
         <tr>
             <td>{{ ref[0] }}</td>
             <td>{{ ref[1] }}</td>
-            <td><a href="{{ ref[2] }}">Link</a></td>
+            <td><a type="button" class="btn btn-success btn-sm" href="{{ ref[2] }}">下载</a></td>
         </tr>
     {% endfor %}
 </table>
+<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.bootcss.com/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
 </body>
 </html>
