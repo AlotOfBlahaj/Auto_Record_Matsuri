@@ -127,9 +127,6 @@ async def bd_upload(file):
         return line
 
 
-asyncio.run(bd_upload('default'))
-
-
 async def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
     co = ["streamlink", "--hls-live-restart", "--loglevel", "trace", "--force"]
     if enable_proxy:
