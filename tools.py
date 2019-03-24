@@ -165,9 +165,13 @@ async def process_video(is_live, model):
     share = await bd_upload(f"{is_live['Title']}.ts")
     reg = r'https://pan.baidu.com/s/([A-Za-z0-9_-]{23})'
     linkre = re.compile(reg)
-    link = re.search(linkre, share).group(1)
+    link = re.search(linkre, share)
+    if link:
+        link = link.group(1)
+    else:
+        raise IOError
     database = Database()
-    database.insert(is_live['Title'], 'https://pan.baidu.com/s/' + link)
+    database.insert(is_live['Title'], 'https://pan.baidu.com/s/' + link, is_live['Date'])
     echo_log(share)
     await bot(f"[下载提示] {is_live['Title']} 已上传" + share)
 
@@ -187,7 +191,8 @@ class Database:
         self.conn.commit()
         echo_log(f"ID: {_id} has been deleted")
 
-    def insert(self, _title, _link):
-        self.cursor.execute(f"INSERT INTO StreamLink (ID, Title, Link) VALUES (NULL, '{_title}', '{_link}');")
+    def insert(self, _title, _link, _date):
+        self.cursor.execute(
+            f"INSERT INTO StreamLink (ID, Title, Link, Date) VALUES (NULL, '{_title}', '{_link}', '{_date}');")
         self.conn.commit()
         echo_log(f"Link: {_link} has been inserted")

@@ -9,6 +9,13 @@
           integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 <body>
+{#<style>#}
+{#        body{#}
+{#            background: url({{ url_for('static', filename='bg.png') }}) no-repeat;#}
+{#background-size: 100% 100%;#}
+{#position: absolute;#}
+{#        }#}
+{#    </style>#}
 <div class="page-header">
     <h1>夏色まつり
         <small>Unofficial fans website</small>
@@ -52,13 +59,15 @@
     <thead>
     <td>ID</td>
     <td>视频名称</td>
+    <td>发布时间</td>
     <td>下载</td>
     </thead>
     {% for ref in url_current %}
         <tr>
             <td>{{ ref[0] }}</td>
             <td>{{ ref[1] }}</td>
-            <td><a type="button" class="btn btn-success btn-sm" href="{{ ref[2] }}">下载</a></td>
+            <td>{{ ref[3] }}</td>
+            <td><a type="button" class="btn btn-success btn-sm" href="{{ ref[2] }}">百度云</a></td>
         </tr>
     {% endfor %}
 </table>

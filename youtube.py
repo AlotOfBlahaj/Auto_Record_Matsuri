@@ -28,8 +28,11 @@ class Youtube:
             title = item['snippet']['title']
             title = title.replace("/", " ")
             vid = item['id']['videoId']
+            date = item['snippet']['publishedAt']
+            date = date[0:10]
             return {'Title': title,
-                    'Ref': vid}
+                    'Ref': vid,
+                    'Date': date}
         else:
             raise ValueError
 
