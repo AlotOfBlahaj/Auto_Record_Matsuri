@@ -110,21 +110,24 @@ async def bd_upload(file):
         s1 = subprocess.Popen(command)
         while True:
             s1_code = s1.poll()
-            if s1_code:
+            if s1_code is not None:
                 break
             else:
                 await asyncio.sleep(10)
         s2 = subprocess.Popen(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               encoding='utf-8')
-        while True:
-            s2_code = s2.poll()
-            if s2_code:
-                break
-            else:
-                echo_log('Uploading...')
-                await asyncio.sleep(30)
-        line = s2.stdout
+        # while True:
+        #     s2_code = s2.poll()
+        #     if s2_code:
+        #         break
+        #     else:
+        #         echo_log('Uploading...')
+        #         await asyncio.sleep(30)
+        line = s2.stdout.readline().replace('\n', '')
         return line
+
+
+asyncio.run(bd_upload('default'))
 
 
 async def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
@@ -141,7 +144,7 @@ async def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
     s = subprocess.Popen(co)
     while True:
         s_code = s.poll()
-        if s_code:
+        if s_code is not None:
             break
         else:
             echo_log('Downloading...')
