@@ -110,20 +110,16 @@ async def bd_upload(file):
         s1 = subprocess.Popen(command)
         while True:
             s1_code = s1.poll()
-            if s1_code == 1:
+            if s1_code:
                 break
-            elif s1_code == 0:
-                raise IOError
             else:
-                await asyncio.sleep(30)
+                await asyncio.sleep(10)
         s2 = subprocess.Popen(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               encoding='utf-8')
         while True:
             s2_code = s2.poll()
-            if s2_code == 1:
+            if s2_code:
                 break
-            elif s2_code == 0:
-                raise IOError
             else:
                 echo_log('Uploading...')
                 await asyncio.sleep(30)
@@ -145,13 +141,11 @@ async def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
     s = subprocess.Popen(co)
     while True:
         s_code = s.poll()
-        if s_code == 1:
+        if s_code:
             break
-        elif s_code == 0:
-            raise IOError
         else:
             echo_log('Downloading...')
-            await asyncio.sleep(30)
+            await asyncio.sleep(15)
     # subprocess.run(co)
     # 不应该使用os.system
 
