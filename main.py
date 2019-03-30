@@ -3,10 +3,11 @@ from urllib import error
 
 from config import (
     sec, enable_mirrativ, enable_youtube, enable_openrec, oprec_id,
-    userid, channel_id, api_key, quality)
+    userid, channel_id, api_key, quality, enable_twitcasting, twitcasting_ld)
 from mirrativ import Mirrativ
 from openrec import Openrec
 from tools import m_error
+from twitcasting import Twitcasting
 from youtube import Youtube
 
 
@@ -21,6 +22,8 @@ class Localtimer:
             self.m = Mirrativ()
         if enable_openrec:
             self.o = Openrec()
+        if enable_twitcasting:
+            self.t = Twitcasting()
 
     async def check_main(self):
         task = []
@@ -38,6 +41,10 @@ class Localtimer:
             for x in oprec_id:
                 task_o = asyncio.create_task(self.o.check(x))
                 task.append(task_o)
+        if enable_twitcasting:
+            for x in twitcasting_ld:
+                task_t = asyncio.create_task(self.t.check(x))
+                task.append(task_t)
         await asyncio.wait(task)
 
 

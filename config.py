@@ -12,6 +12,8 @@ channel_id = ['UCQ0UDLQCjY0rmuxCDE38FGg']  # UCQ0UDLQCjY0rmuxCDE38FGg
 userid = ['3264432']  # 3264432
 # Openrec用户ID
 oprec_id = ['natsuiromatsuri']  # natsuiromatsuri
+# Twitcasting用户ID
+twitcasting_ld = ['natsuiromatsuri']
 # 检测间隔时间（s）
 sec = 15
 # 错误间隔时间（s）
@@ -22,6 +24,8 @@ enable_youtube = 1
 enable_mirrativ = 1
 # 是否开启openrec监控 0/1
 enable_openrec = 1
+# 是否开启twitcasting监控 0/1
+enable_twitcasting = 1
 # 下载质量选择项[720p,1080p] M台不支持画质调整
 quality = '720p'
 # 机器人开关
