@@ -21,8 +21,10 @@ class Mirrativ:
         hsl_info = json.loads(await self.Aio.main(f'https://www.mirrativ.com/api/live/live?live_id={is_live}', "get"))
         title = hsl_info['shares']['twitter']['card']['title']
         steaming_url = hsl_info['streaming_url_hls']
+        target = hsl_info['share_url']
         return {'Title': title,
-                'Ref': steaming_url}
+                'Ref': steaming_url,
+                'Target': target}
 
     async def check(self, userid):
         is_live = await self.live_info(userid)

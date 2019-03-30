@@ -18,7 +18,10 @@ class Openrec:
             info = dom.xpath('/html/body/div[1]/div[2]/div[18]/div[2]/div/div[3]/ul/li[1]/ul/li/a[2]')[0]
             ref = info.xpath('@href')[0]
             title = dom.xpath('/html/body/div[1]/div[2]/div[18]/div[2]/div/div[3]/ul/li[1]/ul/li/a[2]/text()')[0]
-            return {'Title': title, 'Ref': ref}
+            target = ref
+            return {'Title': title,
+                    'Ref': ref,
+                    'Target': target}
 
     async def check(self, oprec_id):
         is_live = await self.is_live(oprec_id)

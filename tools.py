@@ -151,7 +151,7 @@ async def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
 
 
 async def process_video(is_live, model):
-    await bot(f"[直播提示] [{model}]{is_live.get('Title')} 正在直播 链接: https://www.youtube.com/watch?v={is_live['Ref']}")
+    await bot(f"[直播提示] [{model}]{is_live.get('Title')} 正在直播 链接: https://www.youtube.com/watch?v={is_live['Target']}")
     echo_log(model + strftime('|%m-%d %H:%M:%S|', localtime(time())) +
              'Found A Live, starting downloader')
     if model == 'Youtube':

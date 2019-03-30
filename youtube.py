@@ -30,9 +30,11 @@ class Youtube:
             vid = item['id']['videoId']
             date = item['snippet']['publishedAt']
             date = date[0:10]
+            target = f"https://www.youtube.com/watch?v={vid}"
             return {'Title': title,
                     'Ref': vid,
-                    'Date': date}
+                    'Date': date,
+                    'Target': target}
         else:
             raise ValueError
 
