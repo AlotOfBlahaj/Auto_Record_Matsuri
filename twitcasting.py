@@ -1,4 +1,3 @@
-import asyncio
 import json
 import time
 
@@ -39,6 +38,3 @@ class Twitcasting:
             echo_log('Twitcasting' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
                      f'Not found Live, after {sec}s checking')
 
-
-t = Twitcasting()
-asyncio.run(t.get_hsl('natsuiromatsuri'))
