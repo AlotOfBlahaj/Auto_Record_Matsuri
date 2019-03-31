@@ -23,9 +23,11 @@ class Twitcasting:
         title = dom.xpath('/html/body/div[3]/div[2]/div/div[2]/h2/span[3]/a/text()')[0]
         ref = f"https://twitcasting.tv/{twitcasting_id}/metastream.m3u8"
         target = f"https://twitcasting.tv/{twitcasting_id}"
+        date = time.strftime("%Y-%m-%d", time.localtime())
         return {'Title': title,
                 'Ref': ref,
-                'Target': target}
+                'Target': target,
+                'Date': date}
 
     async def check(self, twitcasting_id):
         is_live = await self.live_info(twitcasting_id)
