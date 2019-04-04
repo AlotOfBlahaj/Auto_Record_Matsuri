@@ -14,13 +14,17 @@ class Twitcasting:
     async def live_info(self, twitcasting_id):
         live_js = json.loads(await self.aio.main(
             f"https://twitcasting.tv/streamserver.php?target={twitcasting_id}&mode=client", 'get'))
-        nowlive = live_js['movie']['live']
-        return nowlive
+        is_live = live_js['movie']['live']
+        vid = str(live_js['movie']['id'])
+        live_info = {"Is_live": is_live,
+                     "Vid": vid}
+        return live_info
 
-    async def get_hsl(self, twitcasting_id):
+    async def get_hsl(self, twitcasting_id, live_info):
         html = await self.aio.main(f"https://twitcasting.tv/{twitcasting_id}", "get")
         dom = etree.HTML(html)
         title = dom.xpath('/html/body/div[3]/div[2]/div/div[2]/h2/span[3]/a/text()')[0]
+        title += '|' + live_info.get('Vid')
         ref = f"https://twitcasting.tv/{twitcasting_id}/metastream.m3u8"
         target = f"https://twitcasting.tv/{twitcasting_id}"
         date = time.strftime("%Y-%m-%d", time.localtime())
@@ -30,9 +34,9 @@ class Twitcasting:
                 'Date': date}
 
     async def check(self, twitcasting_id):
-        is_live = await self.live_info(twitcasting_id)
-        if is_live:
-            result = await self.get_hsl(twitcasting_id)
+        live_info = await self.live_info(twitcasting_id)
+        if live_info.get('Is_live'):
+            result = await self.get_hsl(twitcasting_id, live_info)
             await process_video(result, "Twitcasting")
         else:
             echo_log('Twitcasting' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
