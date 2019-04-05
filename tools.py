@@ -172,7 +172,7 @@ async def process_video(is_live, model):
     if link:
         link = link.group(1)
     else:
-        raise IOError
+        raise RuntimeError('上传错误')
     database = Database()
     database.insert(is_live['Title'], 'https://pan.baidu.com/s/' + link, is_live['Date'])
     echo_log(share)
