@@ -1,12 +1,11 @@
 import asyncio
-from urllib import error
+from time import sleep
 
 from config import (
     sec, enable_mirrativ, enable_youtube, enable_openrec, oprec_id,
     userid, channel_id, api_key, quality, enable_twitcasting, twitcasting_ld)
 from mirrativ import Mirrativ
 from openrec import Openrec
-from tools import m_error
 from twitcasting import Twitcasting
 from youtube import Youtube
 
@@ -17,7 +16,6 @@ class Localtimer:
     def __init__(self):
         if enable_youtube:
             self.y = Youtube(api_key, quality)
-            self.y_t = Youtube(api_key, quality)
         if enable_mirrativ:
             self.m = Mirrativ()
         if enable_openrec:
@@ -31,7 +29,7 @@ class Localtimer:
             for x in channel_id:
                 task_y = asyncio.create_task(self.y.check(x))
                 task.append(task_y)
-            task_y_temp = asyncio.create_task(self.y_t.check_temp())
+            task_y_temp = asyncio.create_task(self.y.check_temp())
             task.append(task_y_temp)
         if enable_mirrativ:
             for x in userid:
@@ -51,16 +49,9 @@ class Localtimer:
 async def main():
     t = Localtimer()
     await t.check_main()
-    await asyncio.sleep(sec)
 
 
 if __name__ == '__main__':
     while True:
-        try:
-            asyncio.run(main())
-        except error.URLError:
-            m_error('URL error!')
-        except AttributeError:
-            m_error('AttributeError!')
-        except IOError:
-            m_error('Download was broken!')
+        asyncio.run(main())
+        sleep(sec)

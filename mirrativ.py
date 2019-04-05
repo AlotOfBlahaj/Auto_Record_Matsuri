@@ -2,13 +2,14 @@ import json
 import time
 
 from config import sec
-from tools import Aio, echo_log, process_video
+from tools import Aio, get_logger, process_video
 
 
 class Mirrativ:
 
     def __init__(self):
         self.Aio = Aio()
+        self.logger = get_logger(__name__)
 
     async def live_info(self, userid):
         l_info = json.loads(await self.Aio.main(f'https://www.mirrativ.com/api/user/profile?user_id={userid}', "get"))
@@ -34,5 +35,4 @@ class Mirrativ:
             is_live = await self.get_hsl(is_live)
             await process_video(is_live, 'Mirrativ')
         else:
-            echo_log('Mirrativ' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                     f'Not found Live, after {sec}s checking')
+            self.logger.info(f'Not found Live, after {sec}s checking')

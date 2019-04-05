@@ -3,12 +3,13 @@ import time
 from lxml.html import etree
 
 from config import sec
-from tools import Aio, echo_log, process_video
+from tools import Aio, get_logger, process_video
 
 
 class Openrec:
     def __init__(self):
         self.Aio = Aio()
+        self.logger = get_logger(__name__)
 
     async def is_live(self, oprec_id):
         html = await self.Aio.main(f'https://www.openrec.tv/user/{oprec_id}', "get")
@@ -30,5 +31,4 @@ class Openrec:
         if is_live:
             await process_video(is_live, 'Openrec')
         else:
-            echo_log('Openrec' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                     f'Not found Live, after {sec}s checking')
+            self.logger.info(f'Not found Live, after {sec}s checking')

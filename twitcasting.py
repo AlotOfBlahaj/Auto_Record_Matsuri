@@ -4,12 +4,13 @@ import time
 from lxml.html import etree
 
 from config import sec
-from tools import Aio, process_video, echo_log
+from tools import Aio, process_video, get_logger
 
 
 class Twitcasting:
     def __init__(self):
         self.aio = Aio()
+        self.logger = get_logger(__name__)
 
     async def live_info(self, twitcasting_id):
         live_js = json.loads(await self.aio.main(
@@ -39,5 +40,4 @@ class Twitcasting:
             result = await self.get_hsl(twitcasting_id, live_info)
             await process_video(result, "Twitcasting")
         else:
-            echo_log('Twitcasting' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                     f'Not found Live, after {sec}s checking')
+            self.logger.info(f'Not found Live, after {sec}s checking')

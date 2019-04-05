@@ -1,9 +1,8 @@
 import json
 import re
-import time
 
 from config import sec
-from tools import Aio, echo_log, process_video, Database
+from tools import Aio, get_logger, process_video, Database
 
 
 class Youtube:
@@ -15,6 +14,7 @@ class Youtube:
         self.quality = quality
         self.database = Database()
         self.Aio = Aio()
+        self.logger = get_logger(__name__)
 
     # 关于SearchAPI的文档 https://developers.google.com/youtube/v3/docs/search/list
     async def get_videoid_by_channel_id(self, channel_id):
@@ -36,7 +36,8 @@ class Youtube:
                     'Date': date,
                     'Target': target}
         else:
-            raise ValueError
+            self.logger.error('getting video id failed')
+            raise RuntimeError
 
     async def get_temp_refvid(self, temp_ref):
         reg = r"watch\?v=([A-Za-z0-9_-]{11})"
@@ -51,8 +52,7 @@ class Youtube:
                     self.database.delete(_id)
                     return is_live
             else:
-                echo_log('Youtube|temp' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                         f'Not found Live, after {sec}s checking')
+                self.logger.info(f'Not found Live, after {sec}s checking')
 
     async def getlive_title(self, vid):
         for x in vid:
@@ -61,7 +61,8 @@ class Youtube:
                                     r'part=liveStreamingDetails,snippet', "get"))
             # 判断视频是否正确
             if live_info['pageInfo']['totalResults'] != 1:
-                raise ValueError
+                self.logger.error('Getting title Failed')
+                raise RuntimeError
             # JSON中的数组将被转换为列表，此处使用[0]获得其中的数据
             item = live_info['items'][0]
             title = item['snippet']['title']
@@ -76,11 +77,9 @@ class Youtube:
             is_live = await self.get_videoid_by_channel_id(channel_id)
             await process_video(is_live, 'Youtube')
         elif 'Upcoming live streams' in html:
-            echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                     f'Found A Live Upcoming, after {sec}s checking')
+            self.logger.info(f'Found A Live Upcoming, after {sec}s checking')
         else:
-            echo_log('Youtube' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                     f'Not found Live, after {sec}s checking')
+            self.logger.info(f'Not found Live, after {sec}s checking')
 
     async def check_temp(self):
         temp_ref = self.database.select()
@@ -90,5 +89,4 @@ class Youtube:
             if is_live:
                 await process_video(is_live, 'Youtube')
         else:
-            echo_log('Youtube|temp' + time.strftime('|%m-%d %H:%M:%S|', time.localtime(time.time())) +
-                     f'Queue is empty, after {sec}s checking')
+            self.logger.info(f'Queue is empty, after {sec}s checking')

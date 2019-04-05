@@ -1,26 +1,26 @@
 import asyncio
 import json
+import logging
 import re
 import sqlite3
 import subprocess
-from os import mkdir, name
-from time import strftime, localtime, time, sleep
+from os import name
+from time import strftime, localtime, time
 
 import aiohttp
 
-from config import ddir, sec_error, enable_bot, enable_upload, host, group_id, quality, proxy, enable_proxy
+from config import ddir, enable_bot, enable_upload, host, group_id, quality, proxy, enable_proxy
 
 
 class Aio:
     def __init__(self):
-        pass
+        self.logger = get_logger('Aiohttp')
 
     async def main(self, url, method, **kw):
         async with aiohttp.ClientSession() as session:
             if method == "get":
                 return await self.fetch_html(session, url)
             elif method == "post":
-
                 return await self.post(session, url, kw['msg'], kw['headers'])
 
     async def fetch_html(self, session, url):
@@ -30,14 +30,24 @@ class Aio:
         }
         if enable_proxy:
             async with session.get(url, proxy=f'http://{proxy}', headers=fake_headers) as response:
-                return await response.text(encoding='utf-8')
+                if response.status == 200:
+                    return await response.text(encoding='utf-8')
+                else:
+                    self.logger.error('Get Error')
+                    raise RuntimeError
         else:
             async with session.get(url, headers=fake_headers) as response:
-                return await response.text()
+                if response.status == 200:
+                    return await response.text(encoding='utf-8')
+                else:
+                    self.logger.error('Get Error')
+                    raise RuntimeError
 
     async def post(self, session, url, _json, headers):
-        async with session.post(url, data=_json, headers=headers):
-            pass
+        async with session.post(url, data=_json, headers=headers) as response:
+            if response.status != 200:
+                self.logger.error('Post Error')
+                raise RuntimeError
     # if enable_proxy == 1:
     #     proxy_support = request.ProxyHandler({'http': '%s' % proxy, 'https': '%s' % proxy})
     #     opener = request.build_opener(proxy_support)
@@ -54,22 +64,25 @@ class Aio:
     # return html
 
 
-def m_error(msg):
-    echo_log(f'{msg}. After {sec_error}s retrying')
-    sleep(sec_error)
+def get_logger(module):
+    logger = logging.getLogger(module)
+    if not logger.handlers:
+        logger.setLevel(level=logging.DEBUG)
 
+        # 格式化
+        formatter = logging.Formatter('%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
 
-def echo_log(log):
-    today = strftime('%m-%d', localtime(time()))
-    print(log)
-    while True:
-        try:
-            with open(rf"./log/log-{today}.log", 'a') as logs:
-                logs.write(log + "\n")
-            break
-        # 没有log文件夹的话就新建一个
-        except FileNotFoundError:
-            mkdir("log")
+        # 输出文件
+        today = strftime('%m-%d', localtime(time()))
+        file_handler = logging.FileHandler(f'log/log-{today}.log')
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+        # 输出流
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+    return logger
 
 
 # 关于机器人HTTP API https://cqhttp.cc/docs/4.7/#/API
@@ -144,7 +157,7 @@ async def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
         if s_code is not None:
             break
         else:
-            echo_log('Downloading...')
+            get_logger('Downloading...')
             await asyncio.sleep(15)
     # subprocess.run(co)
     # 不应该使用os.system
@@ -152,8 +165,9 @@ async def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
 
 async def process_video(is_live, model):
     await bot(f"[直播提示] [{model}]{is_live.get('Title')} 正在直播 链接: {is_live['Target']}")
-    echo_log(model + strftime('|%m-%d %H:%M:%S|', localtime(time())) +
-             'Found A Live, starting downloader')
+    logger = get_logger('Process Video')
+    logger.info(model + strftime('|%m-%d %H:%M:%S|', localtime(time())) +
+                'Found A Live, starting downloader')
     replace_list = ['|', '/', '\\']
     for x in replace_list:
         is_live['Title'] = is_live['Title'].replace(x, '#')
@@ -162,8 +176,8 @@ async def process_video(is_live, model):
                          enable_proxy, proxy, quality)
     else:
         await downloader(is_live['Ref'], is_live['Title'], enable_proxy, proxy)
-    echo_log(model + strftime("|%m-%d %H:%M:%S|", localtime(time())) +
-             f"{is_live['Title']} was already downloaded")
+    logger.info(model + strftime("|%m-%d %H:%M:%S|", localtime(time())) +
+                f"{is_live['Title']} was already downloaded")
     await bot(f"[下载提示] {is_live['Title']} 已下载完成，等待上传")
     share = await bd_upload(f"{is_live['Title']}.ts")
     reg = r'https://pan.baidu.com/s/([A-Za-z0-9_-]{23})'
@@ -172,10 +186,11 @@ async def process_video(is_live, model):
     if link:
         link = link.group(1)
     else:
-        raise RuntimeError('上传错误')
+        logger.error('Uploading Failed')
+        raise RuntimeError
     database = Database()
     database.insert(is_live['Title'], 'https://pan.baidu.com/s/' + link, is_live['Date'])
-    echo_log(share)
+    get_logger(share)
     await bot(f"[下载提示] {is_live['Title']} 已上传" + share)
 
 
@@ -183,6 +198,7 @@ class Database:
     def __init__(self):
         self.conn = sqlite3.connect('ref.db')
         self.cursor = self.conn.cursor()
+        self.logger = get_logger('Database')
 
     def select(self):
         self.cursor.execute('SELECT ID,REF FROM Youtube')
@@ -192,10 +208,10 @@ class Database:
     def delete(self, _id):
         self.cursor.execute(f'DELETE FROM Youtube WHERE ID = {_id};')
         self.conn.commit()
-        echo_log(f"ID: {_id} has been deleted")
+        self.logger.info(f"ID: {_id} has been deleted")
 
     def insert(self, _title, _link, _date):
         self.cursor.execute(
             f"INSERT INTO StreamLink (ID, Title, Link, Date) VALUES (NULL, '{_title}', '{_link}', '{_date}');")
         self.conn.commit()
-        echo_log(f"Link: {_link} has been inserted")
+        self.logger.info(f"Link: {_link} has been inserted")
