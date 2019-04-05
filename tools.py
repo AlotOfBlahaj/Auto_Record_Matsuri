@@ -154,6 +154,9 @@ async def process_video(is_live, model):
     await bot(f"[直播提示] [{model}]{is_live.get('Title')} 正在直播 链接: {is_live['Target']}")
     echo_log(model + strftime('|%m-%d %H:%M:%S|', localtime(time())) +
              'Found A Live, starting downloader')
+    replace_list = ['|', '/', '\\']
+    for x in replace_list:
+        is_live['Title'] = is_live['Title'].replace(x, '#')
     if model == 'Youtube':
         await downloader(r"https://www.youtube.com/watch?v=" + is_live['Ref'], is_live['Title'],
                          enable_proxy, proxy, quality)
