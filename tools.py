@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 import re
@@ -120,14 +119,8 @@ async def bd_upload(file):
         command.append(f"{ddir}/{file}")
         command.append("/")
         command2.append(file)
-        s1 = subprocess.Popen(command)
-        while True:
-            s1_code = s1.poll()
-            if s1_code is not None:
-                break
-            else:
-                await asyncio.sleep(10)
-        s2 = subprocess.Popen(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        subprocess.run(command)
+        s2 = subprocess.run(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               encoding='utf-8')
         # while True:
         #     s2_code = s2.poll()
@@ -151,14 +144,7 @@ async def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
     co.append(f"{ddir}/{title}.ts")
     co.append(link)
     co.append(quality)
-    s = subprocess.Popen(co)
-    while True:
-        s_code = s.poll()
-        if s_code is not None:
-            break
-        else:
-            get_logger('Downloading...')
-            await asyncio.sleep(15)
+    subprocess.run(co)
     # subprocess.run(co)
     # 不应该使用os.system
 
