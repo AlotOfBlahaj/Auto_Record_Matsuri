@@ -107,6 +107,7 @@ async def bot(message):
 
 
 async def bd_upload(file):
+    logger = get_logger('bd_upload')
     if enable_upload:
         if 'nt' in name:
             command = [".\\BaiduPCS-Go\\BaiduPCS-Go.exe", "upload"]
@@ -120,8 +121,9 @@ async def bd_upload(file):
         command.append("/")
         command2.append(file)
         subprocess.run(command)
+        logger.info('Uploading success')
         s2 = subprocess.run(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                              encoding='utf-8')
+                            encoding='utf-8')
         # while True:
         #     s2_code = s2.poll()
         #     if s2_code:
@@ -130,6 +132,10 @@ async def bd_upload(file):
         #         echo_log('Uploading...')
         #         await asyncio.sleep(30)
         line = s2.stdout.readline().replace('\n', '')
+        if 'https' in line:
+            logger.info('Share success')
+        else:
+            logger.error('Share failed')
         return line
 
 
@@ -166,19 +172,24 @@ async def process_video(is_live, model):
                 f"{is_live['Title']} was already downloaded")
     await bot(f"[下载提示] {is_live['Title']} 已下载完成，等待上传")
     share = await bd_upload(f"{is_live['Title']}.ts")
-    reg = r'https://pan.baidu.com/s/([A-Za-z0-9_-]{23})'
-    linkre = re.compile(reg)
-    link = re.search(linkre, share)
-    if link:
-        link = link.group(1)
+    if 'https' not in share:
+        await bot(f"[下载提示] 上传模块工作异常，等待手动修正")
+        exit(-1)
     else:
-        logger.error('Uploading Failed')
-        raise RuntimeError
-    database = Database()
-    database.insert(is_live['Title'], 'https://pan.baidu.com/s/' + link, is_live['Date'])
-    get_logger(share)
-    # await bot(f"[下载提示] {is_live['Title']} 已上传" + share)
-    await bot(f"[下载提示] {is_live['Title']} 已上传, 请查看页面")
+        reg = r'https://pan.baidu.com/s/([A-Za-z0-9_-]{23})'
+        linkre = re.compile(reg)
+        link = re.search(linkre, share)
+        if link:
+            link = link.group(1)
+        else:
+            logger.error('Uploading Failed')
+            raise RuntimeError
+        database = Database()
+        database.insert(is_live['Title'], 'https://pan.baidu.com/s/' + link, is_live['Date'])
+        get_logger(share)
+        # await bot(f"[下载提示] {is_live['Title']} 已上传" + share)
+        await bot(f"[下载提示] {is_live['Title']} 已上传, 请查看页面")
+
 
 class Database:
     def __init__(self):
