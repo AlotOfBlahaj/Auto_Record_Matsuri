@@ -3,7 +3,7 @@ import logging
 import re
 import sqlite3
 import subprocess
-from os import name
+from os import name, mkdir
 from time import strftime, localtime, time
 
 import aiohttp
@@ -73,7 +73,11 @@ def get_logger(module):
 
         # 输出文件
         today = strftime('%m-%d', localtime(time()))
-        file_handler = logging.FileHandler(f'log/log-{today}.log')
+        try:
+            file_handler = logging.FileHandler(f"log/log-{today}.log")
+        except FileNotFoundError:
+            mkdir('log')
+            file_handler = logging.FileHandler(f"log/log-{today}.log")
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
