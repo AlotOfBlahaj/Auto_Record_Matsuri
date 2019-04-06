@@ -66,8 +66,13 @@ class Youtube:
             # JSON中的数组将被转换为列表，此处使用[0]获得其中的数据
             item = live_info['items'][0]
             title = item['snippet']['title']
+            date = item['snippet']['publishedAt']
+            date = date[0:10]
+            target = f"https://www.youtube.com/watch?v={x}"
             return {'Title': title,
-                    'Ref': x}
+                    'Ref': x,
+                    'Target': target,
+                    'Date': date}
 
     async def check(self, channel_id):
         html = await self.Aio.main(f'https://www.youtube.com/channel/{channel_id}/featured', "get")
