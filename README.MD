@@ -6,10 +6,11 @@ Auto_Record_Matsuri [![Build Status](https://travis-ci.org/fzxiao233/Auto_Record
     
 功能
 ----
-- 自动监控Youtube|Mirrativ|Openrec开播
-- 自动下载直播视频（即使不留档也能下载）
-- 自动上传到百度云并获取分享链接
-- 自动插入数据库存储
+- 自动监控Youtube|Openrec|Mirrativ|Twitcasting平台的直播
+- 自动发送直播通知至QQ群（延迟极低，在检测时间设置为15s时）
+- 自动即时抓流下载直播视频（从此杜绝苦苦哀求录播man）
+- 自动将下载的视频上传并设置分享到百度云
+- 顺带维护了一个网页用来发布直播存档
 
 
 使用
@@ -21,13 +22,13 @@ Auto_Record_Matsuri [![Build Status](https://travis-ci.org/fzxiao233/Auto_Record
 
 	    $ python main.py
 	    
-- 使用机器人需要下载酷Q Air 并安装 HTTP API（https://cqhttp.cc/）
+- 使用机器人需要下载[酷Q Air](https://cqhttp.cc/) 并安装 HTTP API
 
-- 使用自动上传分享需要手动在BaiduPCS-Go文件夹中放入文件，并登录（https://github.com/iikira/BaiduPCS-Go）
+- 使用自动上传分享需要手动在[BaiduPCS-Go](https://github.com/iikira/BaiduPCS-Go)文件夹中放入文件，并登录
 
-- 使用数据库需要
+- 使用网页需要
 
-        $ python web.py
+        $ gunicorn -b 0.0.0.0:80 -D web:app
 支持
 ------
 - 更多设置，请编辑config.py
