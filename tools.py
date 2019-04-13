@@ -194,8 +194,10 @@ async def process_video(is_live, model):
         database = Database()
         database.insert(is_live['Title'], 'https://pan.baidu.com/s/' + link, is_live['Date'])
         get_logger(share)
-        # await bot(f"[下载提示] {is_live['Title']} 已上传" + share)
-        await bot(f"[下载提示] {is_live['Title']} 已上传, 请查看页面")
+        if model == 'Mirrativ':
+            await bot(f"[下载提示] {is_live['Title']} 已上传" + share)
+        else:
+            await bot(f"[下载提示] {is_live['Title']} 已上传, 请查看页面")
 
 
 class Database:
