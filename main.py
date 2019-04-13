@@ -1,8 +1,7 @@
 import asyncio
-from time import sleep
 
 from config import (
-    sec, enable_mirrativ, enable_youtube, enable_openrec, oprec_id,
+    enable_mirrativ, enable_youtube, enable_openrec, oprec_id,
     userid, channel_id, api_key, quality, enable_twitcasting, twitcasting_ld)
 from mirrativ import Mirrativ
 from openrec import Openrec
@@ -52,6 +51,4 @@ async def main():
 
 
 if __name__ == '__main__':
-    while True:
-        asyncio.run(main())
-        sleep(sec)
+    asyncio.run(main())

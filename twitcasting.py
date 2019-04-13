@@ -4,7 +4,7 @@ import time
 from lxml.html import etree
 
 from config import sec
-from tools import Aio, process_video, get_logger
+from tools import Aio, process_video, get_logger, while_cor
 
 
 class Twitcasting:
@@ -34,6 +34,7 @@ class Twitcasting:
                 'Target': target,
                 'Date': date}
 
+    @while_cor
     async def check(self, twitcasting_id):
         live_info = await self.live_info(twitcasting_id)
         if live_info.get('Is_live'):

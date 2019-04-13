@@ -3,7 +3,7 @@ import time
 from lxml.html import etree
 
 from config import sec
-from tools import Aio, get_logger, process_video
+from tools import Aio, get_logger, process_video, while_cor
 
 
 class Openrec:
@@ -26,6 +26,7 @@ class Openrec:
                     'Target': target,
                     'Date': date}
 
+    @while_cor
     async def check(self, oprec_id):
         is_live = await self.is_live(oprec_id)
         if is_live:
