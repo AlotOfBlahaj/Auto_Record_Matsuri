@@ -4,6 +4,7 @@ import re
 import sqlite3
 import subprocess
 from os import name, mkdir
+from os.path import isfile
 from time import strftime, localtime, time
 
 import aiohttp
@@ -114,10 +115,10 @@ async def bd_upload(file):
     logger = get_logger('bd_upload')
     if enable_upload:
         if 'nt' in name:
-            command = [".\\BaiduPCS-Go\\BaiduPCS-Go.exe", "upload"]
+            command = [".\\BaiduPCS-Go\\BaiduPCS-Go.exe", "upload", "--nofix"]
             command2 = ['.\\BaiduPCS-GO\\BaiduPCS-Go.exe', "share", "set"]
         else:
-            command = ["./BaiduPCS-Go/BaiduPCS-Go", "upload"]
+            command = ["./BaiduPCS-Go/BaiduPCS-Go", "upload", "--nofix"]
             command2 = ["./BaiduPCS-Go/BaiduPCS-Go", "share", "set"]
             # 此处一定要注明encoding
 
@@ -151,7 +152,7 @@ async def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
         co.append('--https-proxy')
         co.append(f'https://{dl_proxy}')
     co.append("-o")
-    co.append(f"{ddir}/{title}.ts")
+    co.append(f"{ddir}/{title}")
     co.append(link)
     co.append(quality)
     subprocess.run(co)
@@ -167,6 +168,8 @@ async def process_video(is_live, model):
     replace_list = ['|', '/', '\\']
     for x in replace_list:
         is_live['Title'] = is_live['Title'].replace(x, '#')
+    # issue #37
+    is_live['Title'] = file_exist(is_live['Title'])
     if model == 'Youtube':
         await downloader(r"https://www.youtube.com/watch?v=" + is_live['Ref'], is_live['Title'],
                          enable_proxy, proxy, quality)
@@ -216,3 +219,17 @@ class Database:
             f"INSERT INTO StreamLink (ID, Title, Link, Date) VALUES (NULL, '{_title}', '{_link}', '{_date}');")
         self.conn.commit()
         self.logger.info(f"Link: {_link} has been inserted")
+
+
+def file_exist(filename: str) -> str:
+    paths = f'{ddir}/{filename}.ts'
+    if isfile(paths):
+        n = 0
+        while True:
+            new_filename = filename + f'_{n}.ts'
+            if not isfile(f'{ddir}/{new_filename}'):
+                return new_filename
+            else:
+                n += 1
+    else:
+        return filename + '.ts'
