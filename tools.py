@@ -1,10 +1,8 @@
-import asyncio
 import json
 import logging
 import re
 import sqlite3
 import subprocess
-from functools import wraps
 from os import name, mkdir
 from os.path import isfile
 from time import strftime, localtime, time
@@ -12,7 +10,6 @@ from time import strftime, localtime, time
 import aiohttp
 
 from config import ddir, enable_bot, enable_upload, host, group_id, quality, proxy, enable_proxy
-from config import sec
 
 
 class Aio:
@@ -148,7 +145,6 @@ async def bd_upload(file):
 
 
 async def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
-    logger = get_logger('Downloader')
     co = ["streamlink", "--hls-live-restart", "--loglevel", "trace", "--force"]
     if enable_proxy:
         co.append('--http-proxy')
@@ -159,12 +155,7 @@ async def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
     co.append(f"{ddir}/{title}")
     co.append(link)
     co.append(quality)
-    proc = await asyncio.subprocess.create_subprocess_exec(*co)
-    while True:
-        r_code = proc.returncode
-        if r_code is None:
-            logger.info(f'{title} is downloading')
-            await asyncio.sleep(sec)
+    subprocess.run(co)
     # subprocess.run(co)
     # 不应该使用os.system
 
@@ -244,13 +235,3 @@ def file_exist(filename: str) -> str:
                 n += 1
     else:
         return filename + '.ts'
-
-
-def while_cor(func):
-    @wraps(func)
-    async def warpper(*args, **kwargs):
-        while True:
-            ans = await func(*args, **kwargs)
-            await asyncio.sleep(sec)
-
-    return warpper

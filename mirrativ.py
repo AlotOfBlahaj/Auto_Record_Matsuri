@@ -2,7 +2,7 @@ import json
 import time
 
 from config import sec
-from tools import Aio, get_logger, process_video, while_cor
+from tools import Aio, get_logger, process_video
 
 
 class Mirrativ:
@@ -29,7 +29,6 @@ class Mirrativ:
                 'Target': target,
                 'Date': date}
 
-    @while_cor
     async def check(self, userid):
         is_live = await self.live_info(userid)
         if is_live:

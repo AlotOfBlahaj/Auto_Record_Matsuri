@@ -2,7 +2,7 @@ import json
 import re
 
 from config import sec
-from tools import Aio, get_logger, process_video, Database, while_cor
+from tools import Aio, get_logger, process_video, Database
 
 
 class Youtube:
@@ -74,7 +74,6 @@ class Youtube:
                     'Target': target,
                     'Date': date}
 
-    @while_cor
     async def check(self, channel_id):
         html = await self.Aio.main(f'https://www.youtube.com/channel/{channel_id}/featured', "get")
         if '"label":"LIVE NOW"' in html:
@@ -87,7 +86,6 @@ class Youtube:
         else:
             self.logger.info(f'Not found Live, after {sec}s checking')
 
-    @while_cor
     async def check_temp(self):
         temp_ref = self.database.select()
         if temp_ref:
