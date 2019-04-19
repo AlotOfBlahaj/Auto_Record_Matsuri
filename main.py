@@ -1,9 +1,10 @@
 import asyncio
 from time import sleep
 
+from bilibili import Bilibili
 from config import (
     sec, enable_mirrativ, enable_youtube, enable_openrec, oprec_id,
-    userid, channel_id, api_key, quality, enable_twitcasting, twitcasting_ld)
+    userid, channel_id, api_key, quality, enable_twitcasting, twitcasting_ld, bilibili_id, enable_bilibili)
 from mirrativ import Mirrativ
 from openrec import Openrec
 from twitcasting import Twitcasting
@@ -22,6 +23,8 @@ class Localtimer:
             self.o = Openrec()
         if enable_twitcasting:
             self.t = Twitcasting()
+        if enable_bilibili:
+            self.b = Bilibili()
 
     async def check_main(self):
         task = []
@@ -43,6 +46,10 @@ class Localtimer:
             for x in twitcasting_ld:
                 task_t = asyncio.create_task(self.t.check(x))
                 task.append(task_t)
+        if enable_bilibili:
+            for x in bilibili_id:
+                task_b = asyncio.create_task(self.b.check(x))
+                task.append(task_b)
         await asyncio.wait(task)
 
 
