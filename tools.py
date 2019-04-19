@@ -129,14 +129,7 @@ async def bd_upload(file):
         logger.info('Uploading success')
         s2 = subprocess.run(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             encoding='utf-8')
-        # while True:
-        #     s2_code = s2.poll()
-        #     if s2_code:
-        #         break
-        #     else:
-        #         echo_log('Uploading...')
-        #         await asyncio.sleep(30)
-        line = s2.stdout.readline().replace('\n', '')
+        line = s2.stdout.replace('\n', '')
         if 'https' in line:
             logger.info('Share success')
         else:
@@ -178,7 +171,7 @@ async def process_video(is_live, model):
     logger.info(model + strftime("|%m-%d %H:%M:%S|", localtime(time())) +
                 f"{is_live['Title']} was already downloaded")
     await bot(f"[下载提示] {is_live['Title']} 已下载完成，等待上传")
-    share = await bd_upload(f"{is_live['Title']}.ts")
+    share = await bd_upload(f"{is_live['Title']}")
     if 'https' not in share:
         await bot(f"[下载提示] 上传模块工作异常，等待手动修正")
         exit(-1)
