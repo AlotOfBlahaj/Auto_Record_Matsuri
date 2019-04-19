@@ -43,7 +43,7 @@ class Localtimer:
             for x in twitcasting_ld:
                 task_t = asyncio.create_task(self.t.check(x))
                 task.append(task_t)
-        await asyncio.wait(task)
+        [await run for run in task]
 
 
 async def main():

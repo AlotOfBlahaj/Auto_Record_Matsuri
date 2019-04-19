@@ -1,15 +1,17 @@
+import asyncio
 import json
 import logging
 import re
 import sqlite3
-import subprocess
 from os import name, mkdir
-from os.path import isfile
+from os.path import isfile, abspath, dirname
 from time import strftime, localtime, time
 
 import aiohttp
 
 from config import ddir, enable_bot, enable_upload, host, group_id, quality, proxy, enable_proxy
+
+ABSPATH = dirname(abspath(__file__))
 
 
 class Aio:
@@ -115,21 +117,26 @@ async def bd_upload(file):
     logger = get_logger('bd_upload')
     if enable_upload:
         if 'nt' in name:
-            command = [".\\BaiduPCS-Go\\BaiduPCS-Go.exe", "upload", "--nofix"]
-            command2 = ['.\\BaiduPCS-GO\\BaiduPCS-Go.exe', "share", "set"]
+            command = [f"{ABSPATH}\\BaiduPCS-Go\\BaiduPCS-Go.exe", "upload", "--nofix"]
+            command2 = [f'{ABSPATH}\\BaiduPCS-GO\\BaiduPCS-Go.exe', "share", "set"]
         else:
-            command = ["./BaiduPCS-Go/BaiduPCS-Go", "upload", "--nofix"]
-            command2 = ["./BaiduPCS-Go/BaiduPCS-Go", "share", "set"]
+            command = [f"{ABSPATH}/BaiduPCS-Go/BaiduPCS-Go", "upload", "--nofix"]
+            command2 = [f"{ABSPATH}/BaiduPCS-Go/BaiduPCS-Go", "share", "set"]
             # 此处一定要注明encoding
 
         command.append(f"{ddir}/{file}")
         command.append("/")
         command2.append(file)
-        subprocess.run(command)
+        # subprocess.run(command)
+        s1 = await asyncio.create_subprocess_exec(*command)
+        await s1.wait()
         logger.info('Uploading success')
-        s2 = subprocess.run(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            encoding='utf-8')
-        line = s2.stdout.replace('\n', '')
+        # s2 = subprocess.run(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        #                     encoding='utf-8')
+        s2 = await asyncio.create_subprocess_exec(*command2, stdout=asyncio.subprocess.PIPE,
+                                                  stderr=asyncio.subprocess.PIPE)
+        line = await s2.communicate()
+        line = line[0].decode().replace('\n', '')
         if 'https' in line:
             logger.info('Share success')
         else:
@@ -148,7 +155,8 @@ async def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
     co.append(f"{ddir}/{title}")
     co.append(link)
     co.append(quality)
-    subprocess.run(co)
+    do = await asyncio.create_subprocess_exec(*co)
+    await do.wait()
     # subprocess.run(co)
     # 不应该使用os.system
 
