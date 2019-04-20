@@ -1,9 +1,11 @@
+import asyncio
 import sys
 
 import pytest
 
 from mirrativ import Mirrativ
 from openrec import Openrec
+from tools import bd_upload
 from youtube import Youtube
 
 sys.path.insert(0, '..')
@@ -30,6 +32,10 @@ def test_openrec():
     o = Openrec()
     for x in oprec_id:
         o.check(x)
+
+
+def test_bd_upload():
+    asyncio.run(bd_upload('test.txt'))
 
 
 if __name__ == '__main__':

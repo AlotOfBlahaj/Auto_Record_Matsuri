@@ -2,7 +2,8 @@ import json
 import time
 
 from config import sec
-from tools import Aio, get_logger, process_video
+from queues_process import queue_map, add_queue
+from tools import Aio, get_logger
 
 
 class Mirrativ:
@@ -33,6 +34,8 @@ class Mirrativ:
         is_live = await self.live_info(userid)
         if is_live:
             is_live = await self.get_hsl(is_live)
-            await process_video(is_live, 'Mirrativ')
+            return is_live, {'Module': 'Mirrativ', 'Target': userid}
         else:
+            queue = queue_map('Mirrativ')
+            add_queue(queue, userid)
             self.logger.info(f'Not found Live, after {sec}s checking')
