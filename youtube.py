@@ -2,7 +2,8 @@ import json
 import re
 
 from config import sec
-from tools import Aio, get_logger, process_video, Database
+from queues_process import queue_map, add_queue
+from tools import Aio, get_logger, Database, bot
 
 
 class Youtube:
@@ -77,14 +78,25 @@ class Youtube:
     async def check(self, channel_id):
         html = await self.Aio.main(f'https://www.youtube.com/channel/{channel_id}/featured', "get")
         if '"label":"LIVE NOW"' in html:
+            await bot(f"[直播提示]已检测到直播，等待获取详细信息")
             # vid = self.get_videoid_by_channel_id()
             # is_live = self.getlive_vid(vid)
-            is_live = await self.get_videoid_by_channel_id(channel_id)
-            await process_video(is_live, 'Youtube')
-        elif 'Upcoming live streams' in html:
-            self.logger.info(f'Found A Live Upcoming, after {sec}s checking')
+            while True:
+                try:
+                    is_live = await self.get_videoid_by_channel_id(channel_id)
+                    break
+                except RuntimeError:
+                    self.logger.error('Getting Live Failed, waiting 5s to retry')
+            # await process_video(is_live, 'Youtube')
+            return is_live, {'Module': 'Youtube', 'Target': channel_id}
         else:
-            self.logger.info(f'Not found Live, after {sec}s checking')
+            queue = queue_map('Youtube')
+            add_queue(queue, channel_id)
+            # task_queue(queue)
+            if 'Upcoming live streams' in html:
+                self.logger.info(f'Found A Live Upcoming, after {sec}s checking')
+            else:
+                self.logger.info(f'Not found Live, after {sec}s checking')
 
     async def check_temp(self):
         temp_ref = self.database.select()
@@ -92,6 +104,7 @@ class Youtube:
             temp_refvid = await self.get_temp_refvid(temp_ref)
             is_live = temp_refvid
             if is_live:
-                await process_video(is_live, 'Youtube')
+                # await process_video(is_live, 'Youtube')
+                return is_live, {'Module': 'Youtube', 'Target': None}
         else:
             self.logger.info(f'Queue is empty, after {sec}s checking')

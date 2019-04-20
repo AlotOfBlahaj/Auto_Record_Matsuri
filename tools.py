@@ -1,15 +1,14 @@
-import asyncio
+import json
 import json
 import logging
-import re
 import sqlite3
-from os import name, mkdir
+from os import mkdir
 from os.path import isfile, abspath, dirname
 from time import strftime, localtime, time
 
 import aiohttp
 
-from config import ddir, enable_bot, enable_upload, host, group_id, quality, proxy, enable_proxy
+from config import ddir, enable_bot, host, group_id, proxy, enable_proxy
 
 ABSPATH = dirname(abspath(__file__))
 
@@ -111,94 +110,6 @@ async def bot(message):
             await net.main(f'http://{host}/send_group_msg', method='post', headers=headers, msg=msg)
         # req = (f'http://{host}/send_group_msg', headers=headers, data=msg)
         # request.urlopen(req)
-
-
-async def bd_upload(file):
-    logger = get_logger('bd_upload')
-    if enable_upload:
-        if 'nt' in name:
-            command = [f"{ABSPATH}\\BaiduPCS-Go\\BaiduPCS-Go.exe", "upload", "--nofix"]
-            command2 = [f'{ABSPATH}\\BaiduPCS-GO\\BaiduPCS-Go.exe', "share", "set"]
-        else:
-            command = [f"{ABSPATH}/BaiduPCS-Go/BaiduPCS-Go", "upload", "--nofix"]
-            command2 = [f"{ABSPATH}/BaiduPCS-Go/BaiduPCS-Go", "share", "set"]
-            # 此处一定要注明encoding
-
-        command.append(f"{ddir}/{file}")
-        command.append("/")
-        command2.append(file)
-        # subprocess.run(command)
-        s1 = await asyncio.create_subprocess_exec(*command)
-        await s1.wait()
-        logger.info('Uploading success')
-        # s2 = subprocess.run(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        #                     encoding='utf-8')
-        s2 = await asyncio.create_subprocess_exec(*command2, stdout=asyncio.subprocess.PIPE,
-                                                  stderr=asyncio.subprocess.PIPE)
-        line = await s2.communicate()
-        line = line[0].decode().replace('\n', '')
-        if 'https' in line:
-            logger.info('Share success')
-        else:
-            logger.error('Share failed')
-        return line
-
-
-async def downloader(link, title, enable_proxy, dl_proxy, quality='best'):
-    co = ["streamlink", "--hls-live-restart", "--loglevel", "trace", "--force"]
-    if enable_proxy:
-        co.append('--http-proxy')
-        co.append(f'http://{dl_proxy}')
-        co.append('--https-proxy')
-        co.append(f'https://{dl_proxy}')
-    co.append("-o")
-    co.append(f"{ddir}/{title}")
-    co.append(link)
-    co.append(quality)
-    do = await asyncio.create_subprocess_exec(*co)
-    await do.wait()
-    # subprocess.run(co)
-    # 不应该使用os.system
-
-
-async def process_video(is_live, model):
-    await bot(f"[直播提示] [{model}]{is_live.get('Title')} 正在直播 链接: {is_live['Target']}")
-    logger = get_logger('Process Video')
-    logger.info(model + strftime('|%m-%d %H:%M:%S|', localtime(time())) +
-                'Found A Live, starting downloader')
-    replace_list = ['|', '/', '\\']
-    for x in replace_list:
-        is_live['Title'] = is_live['Title'].replace(x, '#')
-    # issue #37
-    is_live['Title'] = file_exist(is_live['Title'])
-    if model == 'Youtube':
-        await downloader(r"https://www.youtube.com/watch?v=" + is_live['Ref'], is_live['Title'],
-                         enable_proxy, proxy, quality)
-    else:
-        await downloader(is_live['Ref'], is_live['Title'], enable_proxy, proxy)
-    logger.info(model + strftime("|%m-%d %H:%M:%S|", localtime(time())) +
-                f"{is_live['Title']} was already downloaded")
-    await bot(f"[下载提示] {is_live['Title']} 已下载完成，等待上传")
-    share = await bd_upload(f"{is_live['Title']}")
-    if 'https' not in share:
-        await bot(f"[下载提示] 上传模块工作异常，等待手动修正")
-        exit(-1)
-    else:
-        reg = r'https://pan.baidu.com/s/([A-Za-z0-9_-]{23})'
-        linkre = re.compile(reg)
-        link = re.search(linkre, share)
-        if link:
-            link = link.group(1)
-        else:
-            logger.error('Uploading Failed')
-            raise RuntimeError
-        database = Database()
-        if not model == 'Mirrativ':
-            database.insert(is_live['Title'], 'https://pan.baidu.com/s/' + link, is_live['Date'])
-            get_logger(share)
-            await bot(f"[下载提示] {is_live['Title']} 已上传, 请查看页面")
-        else:
-            await bot(f"[下载提示] {is_live['Title']} 已上传" + share)
 
 
 class Database:

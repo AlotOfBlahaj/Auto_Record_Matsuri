@@ -3,7 +3,8 @@ import time
 from lxml.html import etree
 
 from config import sec
-from tools import Aio, get_logger, process_video
+from queues_process import queue_map, add_queue
+from tools import Aio, get_logger
 
 
 class Openrec:
@@ -29,6 +30,8 @@ class Openrec:
     async def check(self, oprec_id):
         is_live = await self.is_live(oprec_id)
         if is_live:
-            await process_video(is_live, 'Openrec')
+            return is_live, {'Module': 'Openrec', 'Target': oprec_id}
         else:
+            queue = queue_map('Openrec')
+            add_queue(queue, oprec_id)
             self.logger.info(f'Not found Live, after {sec}s checking')
