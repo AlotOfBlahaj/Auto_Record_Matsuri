@@ -2,7 +2,9 @@ import asyncio
 import multiprocessing
 from time import sleep
 
-from config import sec, quality, api_key, enable_youtube, enable_twitcasting, enable_openrec, enable_mirrativ
+from bilibili import Bilibili
+from config import sec, quality, api_key, enable_youtube, enable_twitcasting, enable_openrec, enable_mirrativ, \
+    enable_bilibili, bilibili_id
 from mirrativ import Mirrativ
 from openrec import Openrec
 from queues import youtube_queue, twitcasting_queue, openrec_queue, mirrativ_queue
@@ -17,6 +19,7 @@ def create_task_list():
     t = Twitcasting()
     o = Openrec()
     m = Mirrativ()
+    b = Bilibili()
     task = []
     if enable_youtube:
         while youtube_queue.qsize():
@@ -30,7 +33,10 @@ def create_task_list():
     if enable_mirrativ:
         while mirrativ_queue.qsize():
             task.append(asyncio.create_task(m.check(mirrativ_queue.get_nowait())))
-    return task
+    if enable_bilibili:
+        for x in bilibili_id:
+            task.append(asyncio.create_task(b.check(x)))
+        return task
 
 
 async def main():
