@@ -7,6 +7,7 @@ Auto_Record_Matsuri [![Build Status](https://travis-ci.org/fzxiao233/Auto_Record
 功能
 ----
 - 自动监控Youtube|Openrec|Mirrativ|Twitcasting平台的直播
+- 自动监控Bilibili熟肉更新
 - 自动发送直播通知至QQ群（延迟极低，在检测时间设置为15s时）
 - 自动即时抓流下载直播视频（从此杜绝苦苦哀求录播man）
 - 自动将下载的视频上传并设置分享到百度云
@@ -26,12 +27,9 @@ Auto_Record_Matsuri [![Build Status](https://travis-ci.org/fzxiao233/Auto_Record
 
 - 使用自动上传分享需要手动在[BaiduPCS-Go](https://github.com/iikira/BaiduPCS-Go)文件夹中放入文件，并登录
 
-- 使用网页需要
-
-        $ gunicorn -b 0.0.0.0:80 -D web:app
 支持
 ------
-- 更多设置，请编辑config.py
+- 设置，请编辑config.py
 
 
-有问题就发Issues吧，有时间就修（鸽了
+有问题或者新功能请发Issues，有时间就修（鸽了
