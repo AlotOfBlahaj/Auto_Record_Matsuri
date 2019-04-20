@@ -36,7 +36,7 @@ def create_task_list():
     if enable_bilibili:
         for x in bilibili_id:
             task.append(asyncio.create_task(b.check(x)))
-        return task
+    return task
 
 
 async def main():
