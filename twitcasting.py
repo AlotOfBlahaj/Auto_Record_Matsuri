@@ -4,7 +4,8 @@ import time
 from lxml.html import etree
 
 from config import sec
-from tools import Aio, process_video, get_logger
+from queues_process import queue_map, add_queue
+from tools import Aio, get_logger
 
 
 class Twitcasting:
@@ -38,6 +39,8 @@ class Twitcasting:
         live_info = await self.live_info(twitcasting_id)
         if live_info.get('Is_live'):
             result = await self.get_hsl(twitcasting_id, live_info)
-            await process_video(result, "Twitcasting")
+            return result, {'Module': 'Twitcasting', 'Target': twitcasting_id}
         else:
+            queue = queue_map('Twitcasting')
+            add_queue(queue, twitcasting_id)
             self.logger.info(f'Not found Live, after {sec}s checking')
