@@ -1,22 +1,17 @@
-import json
-
-from tools import Aio
+from tools import get_json
 
 
 class BilibiliAPI:
-    def __init__(self):
-        self.aio = Aio()
-
-    async def get_video_num(self, mid: int) -> int:
-        nav_info = json.loads(
-            await self.aio.main(f'https://api.bilibili.com/x/space/navnum?mid={mid}&jsonp=jsonp', 'get'))
+    @staticmethod
+    def get_video_num(mid: int) -> int:
+        nav_info = get_json(f'https://api.bilibili.com/x/space/navnum?mid={mid}&jsonp=jsonp')
         video_num = nav_info['data']['video']
         return video_num
 
-    async def get_video(self, mid: int) -> dict:
-        video_info = json.loads(await self.aio.main(
-            f'https://space.bilibili.com/ajax/member/getSubmitVideos?mid={mid}&pagesize=1&tid=0&page=1&keyword=&order=pubdate',
-            'get'))
+    @staticmethod
+    def get_video(mid: int) -> dict:
+        video_info = get_json(
+            f'https://space.bilibili.com/ajax/member/getSubmitVideos?mid={mid}&pagesize=1&tid=0&page=1&keyword=&order=pubdate')
         video = video_info['data']['vlist'][0]
         title = video['title']
         ref = f"https://www.bilibili.com/video/av{video['aid']}"

@@ -1,29 +1,32 @@
-import json
 import time
+from multiprocessing import Process
 
 from lxml.html import etree
 
 from config import sec
-from queues_process import queue_map, add_queue
-from tools import Aio, get_logger
+from daemon import VideoDaemon
+from queues import twitcasting_queue
+from tools import get_logger, get_json
 
 
-class Twitcasting:
+class Twitcasting(VideoDaemon):
     def __init__(self):
-        self.aio = Aio()
-        self.logger = get_logger(__name__)
+        super().__init__(twitcasting_queue)
+        self.logger = get_logger('Twitcasting')
 
-    async def live_info(self, twitcasting_id):
-        live_js = json.loads(await self.aio.main(
-            f"https://twitcasting.tv/streamserver.php?target={twitcasting_id}&mode=client", 'get'))
+    @staticmethod
+    def live_info(twitcasting_id):
+        live_js = get_json(
+            f"https://twitcasting.tv/streamserver.php?target={twitcasting_id}&mode=client")
         is_live = live_js['movie']['live']
         vid = str(live_js['movie']['id'])
         live_info = {"Is_live": is_live,
                      "Vid": vid}
         return live_info
 
-    async def get_hsl(self, twitcasting_id, live_info):
-        html = await self.aio.main(f"https://twitcasting.tv/{twitcasting_id}", "get")
+    @staticmethod
+    def get_hsl(twitcasting_id, live_info):
+        html = get_json(f"https://twitcasting.tv/{twitcasting_id}")
         dom = etree.HTML(html)
         title = dom.xpath('/html/body/div[3]/div[2]/div/div[2]/h2/span[3]/a/text()')[0]
         title += '|' + live_info.get('Vid')
@@ -35,12 +38,15 @@ class Twitcasting:
                 'Target': target,
                 'Date': date}
 
-    async def check(self, twitcasting_id):
-        live_info = await self.live_info(twitcasting_id)
+    def check(self, twitcasting_id):
+        live_info = self.live_info(twitcasting_id)
         if live_info.get('Is_live'):
-            result = await self.get_hsl(twitcasting_id, live_info)
-            return result, {'Module': 'Twitcasting', 'Target': twitcasting_id}
+            result = self.get_hsl(twitcasting_id, live_info)
+            self.put_download([result, {'Module': 'Twitcasting', 'Target': twitcasting_id}])
         else:
-            queue = queue_map('Twitcasting')
-            add_queue(queue, twitcasting_id)
             self.logger.info(f'Not found Live, after {sec}s checking')
+            self.return_and_sleep(twitcasting_id, 'Twitcasting')
+
+    def actor(self, twitcasting_id):
+        proc = Process(target=self.check, args=(twitcasting_id,))
+        proc.start()

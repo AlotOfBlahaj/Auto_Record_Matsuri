@@ -30,8 +30,6 @@ enable_openrec = 1
 enable_twitcasting = 1
 # 是否开启bilibili熟肉更新监控 0/1
 enable_bilibili = 1
-# 下载质量选择项[720p,1080p] M台不支持画质调整
-quality = '720p'
 # 机器人开关
 enable_bot = 0
 # 酷Q机器人HTTPAPI接口

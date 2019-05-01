@@ -1,12 +1,30 @@
 from config import twitcasting_ld, enable_twitcasting, oprec_id, enable_openrec, userid, enable_mirrativ, channel_id, \
     enable_youtube
-from queues import twitcasting_queue, openrec_queue, mirrativ_queue, youtube_queue
+from queues import twitcasting_queue, openrec_queue, mirrativ_queue, youtube_queue, youtube_temp_queue
+from tools import Database
+
+
+class Queue:
+    def __init__(self, queue):
+        self.queue = queue
+
+    def get(self):
+        return self.queue.get()
+
+    def get_nowait(self):
+        return self.queue.get_nowait()
+
+    def put_nowait(self, item):
+        self.queue.put_nowait(item)
 
 
 def queue_init():
     if enable_youtube:
         for x in channel_id:
             youtube_queue.put_nowait(x)
+        database = Database()
+        for x in database.select():
+            youtube_temp_queue.put_nowait(x)
     if enable_mirrativ:
         for x in userid:
             mirrativ_queue.put_nowait(x)
@@ -19,17 +37,9 @@ def queue_init():
 
 
 def queue_map(module):
-    if module == 'Youtube':
-        return youtube_queue
-    elif module == 'Mirrativ':
-        return mirrativ_queue
-    elif module == 'Twitcasting':
-        return twitcasting_queue
-    elif module == 'Openrec':
-        return openrec_queue
-    else:
-        raise RuntimeError
-
-
-def add_queue(queue, data):
-    queue.put_nowait(data)
+    queue = {'Youtube': youtube_queue,
+             'YoutubeTemp': youtube_temp_queue,
+             'Mirrativ': mirrativ_queue,
+             'Twitcasting': twitcasting_queue,
+             'Openrec': openrec_queue}
+    return queue.get(module)

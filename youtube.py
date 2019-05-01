@@ -1,110 +1,117 @@
-import json
 import re
+from multiprocessing import Process
 
-from config import sec
-from queues_process import queue_map, add_queue
-from tools import Aio, get_logger, Database, bot
+from config import sec, api_key
+from daemon import VideoDaemon
+from queues import youtube_queue, youtube_temp_queue
+from tools import get, get_json, get_logger, Database
 
 
-class Youtube:
+class Youtube(VideoDaemon):
 
-    def __init__(self, api_key, quality):
+    def __init__(self):
+        super().__init__(youtube_queue)
         # self.channel_id = channel_id
         self.api_key = api_key
         # 品质设置
-        self.quality = quality
         self.database = Database()
-        self.Aio = Aio()
-        self.logger = get_logger(__name__)
+        self.logger = get_logger('Youtube')
 
     # 关于SearchAPI的文档 https://developers.google.com/youtube/v3/docs/search/list
-    async def get_videoid_by_channel_id(self, channel_id):
-        channel_info = json.loads(
-            await self.Aio.main(rf'https://www.googleapis.com/youtube/v3/search?part=snippet&'
+    def get_videoid_by_channel_id(self, channel_id):
+        channel_info = get_json(rf'https://www.googleapis.com/youtube/v3/search?part=snippet&'
                                 rf'channelId={channel_id}&eventType=live&maxResults=1&type=video&'
-                                rf'key={self.api_key}', "get"))
+                                rf'key={self.api_key}')
         # 判断获取的数据是否正确
-        if channel_info['items']:
+        try:
             item = channel_info['items'][0]
-            title = item['snippet']['title']
-            title = title.replace("/", " ")
-            vid = item['id']['videoId']
-            date = item['snippet']['publishedAt']
-            date = date[0:10]
-            target = f"https://www.youtube.com/watch?v={vid}"
-            return {'Title': title,
-                    'Ref': vid,
-                    'Date': date,
-                    'Target': target}
-        else:
-            self.logger.error('getting video id failed')
+        except KeyError:
+            self.logger.error('Get vid error')
+            raise RuntimeError('Get vid error')
+        title = item['snippet']['title']
+        title = title.replace("/", " ")
+        vid = item['id']['videoId']
+        date = item['snippet']['publishedAt']
+        date = date[0:10]
+        target = f"https://www.youtube.com/watch?v={vid}"
+        return {'Title': title,
+                'Ref': vid,
+                'Date': date,
+                'Target': target}
+
+    def getlive_title(self, vid):
+        live_info = get_json(rf'https://www.googleapis.com/youtube/v3/videos?id={vid}&key={self.api_key}&'
+                             r'part=liveStreamingDetails,snippet')
+        # 判断视频是否正确
+        if live_info['pageInfo']['totalResults'] != 1:
+            self.logger.error('Getting title Failed')
             raise RuntimeError
+        # JSON中的数组将被转换为列表，此处使用[0]获得其中的数据
+        item = live_info['items'][0]
+        title = item['snippet']['title']
+        date = item['snippet']['publishedAt']
+        date = date[0:10]
+        target = f"https://www.youtube.com/watch?v={vid}"
+        return {'Title': title,
+                'Ref': vid,
+                'Target': target,
+                'Date': date}
 
-    async def get_temp_refvid(self, temp_ref):
-        reg = r"watch\?v=([A-Za-z0-9_-]{11})"
-        idre = re.compile(reg)
-        for _id, _ref in temp_ref:
-            vid = re.search(idre, _ref).group(1)
-            html = await self.Aio.main("https://www.youtube.com/watch?v=" f"{vid}", "get")
-            if r'"isLive\":true' in html:
-                is_live = await self.getlive_title([vid])
-                # is_live = self.getlive_vid(vid)
-                if is_live:
-                    self.database.delete(_id)
-                    return is_live
-            else:
-                self.logger.info(f'Not found Live, after {sec}s checking')
-
-    async def getlive_title(self, vid):
-        for x in vid:
-            live_info = json.loads(
-                await self.Aio.main(rf'https://www.googleapis.com/youtube/v3/videos?id={x}&key={self.api_key}&'
-                                    r'part=liveStreamingDetails,snippet', "get"))
-            # 判断视频是否正确
-            if live_info['pageInfo']['totalResults'] != 1:
-                self.logger.error('Getting title Failed')
-                raise RuntimeError
-            # JSON中的数组将被转换为列表，此处使用[0]获得其中的数据
-            item = live_info['items'][0]
-            title = item['snippet']['title']
-            date = item['snippet']['publishedAt']
-            date = date[0:10]
-            target = f"https://www.youtube.com/watch?v={x}"
-            return {'Title': title,
-                    'Ref': x,
-                    'Target': target,
-                    'Date': date}
-
-    async def check(self, channel_id):
-        html = await self.Aio.main(f'https://www.youtube.com/channel/{channel_id}/featured', "get")
+    def check(self, channel_id):
+        html = get(f'https://www.youtube.com/channel/{channel_id}/featured')
         if '"label":"LIVE NOW"' in html:
-            await bot(f"[直播提示]已检测到直播，等待获取详细信息")
             # vid = self.get_videoid_by_channel_id()
-            # is_live = self.getlive_vid(vid)
-            while True:
-                try:
-                    is_live = await self.get_videoid_by_channel_id(channel_id)
-                    break
-                except RuntimeError:
-                    self.logger.error('Getting Live Failed, waiting 5s to retry')
-            # await process_video(is_live, 'Youtube')
-            return is_live, {'Module': 'Youtube', 'Target': channel_id}
+            # get_live_info = self.getlive_vid(vid)
+            try:
+                live_info = self.get_videoid_by_channel_id(channel_id)
+                video = [live_info, {'Module': 'Youtube', 'Target': channel_id}]
+                self.put_download(video)
+            except RuntimeError:
+                self.logger.error('Getting Live Failed, waiting 5s to retry')
+            # await process_video(get_live_info, 'Youtube')
         else:
-            queue = queue_map('Youtube')
-            add_queue(queue, channel_id)
-            # task_queue(queue)
             if 'Upcoming live streams' in html:
                 self.logger.info(f'Found A Live Upcoming, after {sec}s checking')
             else:
                 self.logger.info(f'Not found Live, after {sec}s checking')
+            self.return_and_sleep(channel_id, 'Youtube')
 
-    async def check_temp(self):
-        temp_ref = self.database.select()
-        if temp_ref:
-            temp_refvid = await self.get_temp_refvid(temp_ref)
-            is_live = temp_refvid
-            if is_live:
-                # await process_video(is_live, 'Youtube')
-                return is_live, {'Module': 'Youtube', 'Target': None}
+    def actor(self, channel_id):
+        proc = Process(target=self.check, args=(channel_id,))
+        proc.start()
+
+
+class YoutubeTemp(Youtube):
+    def __init__(self):
+        super().__init__()
+        VideoDaemon.__init__(self, youtube_temp_queue)
+        self.vinfo = None
+        self.vid = None
+        self.db = Database()
+        self.logger = get_logger('YoutubeTemp')
+
+    @staticmethod
+    def get_temp_vid(vlink):
+        reg = r"watch\?v=([A-Za-z0-9_-]{11})"
+        idre = re.compile(reg)
+        _id, vid = vlink
+        vid = re.search(idre, vid).group(1)
+        return {'Vid': vid,
+                'Id': _id}
+
+    def check(self, vlink):
+        self.vinfo = self.get_temp_vid(vlink)
+        self.vid = self.vinfo['Vid']
+        html = get("https://www.youtube.com/watch?v=" f"{self.vid}")
+        if r'"isLive\":true' in html:
+            live_info = self.getlive_title(self.vid)
+            video = [live_info, {'Module': 'Youtube', 'Target': None}]
+            self.db.delete(self.vinfo['Id'])
+            self.put_download(video)
         else:
-            self.logger.info(f'Queue is empty, after {sec}s checking')
+            self.logger.info(f'Not found Live, after {sec}s checking')
+            self.return_and_sleep(vlink, 'YoutubeTemp')
+
+    def actor(self, vlink):
+        proc = Process(target=self.check, args=(vlink,))
+        proc.start()

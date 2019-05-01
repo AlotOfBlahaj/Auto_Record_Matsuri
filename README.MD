@@ -21,7 +21,7 @@ Auto_Record_Matsuri [![Build Status](https://travis-ci.org/fzxiao233/Auto_Record
 	    $ pip3 install -r requirements.txt
 - 执行程序
 
-	    $ python main.py
+	    $ python run.py
 	    
 - 使用机器人需要下载[酷Q Air](https://cqhttp.cc/) 并安装 HTTP API
 
