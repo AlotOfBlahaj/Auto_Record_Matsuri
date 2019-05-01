@@ -1,26 +1,28 @@
-import json
 import time
+from multiprocessing import Process
 
 from config import sec
-from queues_process import queue_map, add_queue
-from tools import Aio, get_logger
+from daemon import VideoDaemon
+from queues import mirrativ_queue
+from tools import get_json, get_logger
 
 
-class Mirrativ:
+class Mirrativ(VideoDaemon):
 
     def __init__(self):
-        self.Aio = Aio()
-        self.logger = get_logger(__name__)
+        super().__init__(mirrativ_queue)
+        self.logger = get_logger('Mirrativ')
 
-    async def live_info(self, userid):
-        l_info = json.loads(await self.Aio.main(f'https://www.mirrativ.com/api/user/profile?user_id={userid}', "get"))
-        nowlive = l_info['onlive']
+    @staticmethod
+    def get_live_info(userid):
+        live_info = get_json(f'https://www.mirrativ.com/api/user/profile?user_id={userid}')
+        nowlive = live_info['onlive']
         if nowlive:
             return nowlive['live_id']
 
-    async def get_hsl(self, is_live):
-        # live_id = self.live_info(userid)
-        hsl_info = json.loads(await self.Aio.main(f'https://www.mirrativ.com/api/live/live?live_id={is_live}', "get"))
+    @staticmethod
+    def get_hsl(is_live):
+        hsl_info = get_json(f'https://www.mirrativ.com/api/live/live?live_id={is_live}')
         title = hsl_info['shares']['twitter']['card']['title']
         steaming_url = hsl_info['streaming_url_hls']
         target = hsl_info['share_url']
@@ -30,12 +32,14 @@ class Mirrativ:
                 'Target': target,
                 'Date': date}
 
-    async def check(self, userid):
-        is_live = await self.live_info(userid)
+    def check(self, userid):
+        is_live = self.get_live_info(userid)
         if is_live:
-            is_live = await self.get_hsl(is_live)
+            is_live = self.get_hsl(is_live)
             return is_live, {'Module': 'Mirrativ', 'Target': userid}
-        else:
-            queue = queue_map('Mirrativ')
-            add_queue(queue, userid)
-            self.logger.info(f'Not found Live, after {sec}s checking')
+        self.logger.info(f'Not found Live, after {sec}s checking')
+        self.return_and_sleep(userid, 'Mirrativ')
+
+    def actor(self, userid):
+        proc = Process(target=self.check, args=(userid,))
+        proc.start()

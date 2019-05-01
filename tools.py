@@ -1,68 +1,33 @@
 import json
-import json
 import logging
 import sqlite3
 from os import mkdir
-from os.path import isfile, abspath, dirname
+from os.path import abspath, dirname
 from time import strftime, localtime, time
 
-import aiohttp
+import requests
 
-from config import ddir, enable_bot, host, group_id, proxy, enable_proxy
+from config import enable_bot, host, group_id, proxy, enable_proxy
 
 ABSPATH = dirname(abspath(__file__))
+fake_headers = {
+    'Accept-Language': 'en-US,en;q=0.8',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101 Firefox/60.0',
+}
+proxies = {
+    "http": f"http://{proxy}",
+    "https": f"http://{proxy}",
+}
 
 
-class Aio:
-    def __init__(self):
-        self.logger = get_logger('Aiohttp')
+def get(url):
+    if enable_proxy:
+        return requests.get(url, headers=fake_headers, proxies=proxies).text
+    return requests.get(url, headers=fake_headers).text
 
-    async def main(self, url, method, **kw):
-        async with aiohttp.ClientSession() as session:
-            if method == "get":
-                return await self.fetch_html(session, url)
-            elif method == "post":
-                return await self.post(session, url, kw['msg'], kw['headers'])
 
-    async def fetch_html(self, session, url):
-        fake_headers = {
-            'Accept-Language': 'en-US,en;q=0.8',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101 Firefox/60.0',
-        }
-        if enable_proxy:
-            async with session.get(url, proxy=f'http://{proxy}', headers=fake_headers) as response:
-                if response.status == 200:
-                    return await response.text(encoding='utf-8')
-                else:
-                    self.logger.error('Get Error')
-                    raise RuntimeError
-        else:
-            async with session.get(url, headers=fake_headers) as response:
-                if response.status == 200:
-                    return await response.text(encoding='utf-8')
-                else:
-                    self.logger.error('Get Error')
-                    raise RuntimeError
-
-    async def post(self, session, url, _json, headers):
-        async with session.post(url, data=_json, headers=headers) as response:
-            if response.status != 200:
-                self.logger.error('Post Error')
-                raise RuntimeError
-    # if enable_proxy == 1:
-    #     proxy_support = request.ProxyHandler({'http': '%s' % proxy, 'https': '%s' % proxy})
-    #     opener = request.build_opener(proxy_support)
-    #     request.install_opener(opener)
-    # # 此处一定要注明Language, 见commit cda7031
-    # fake_headers = {
-    #     'Accept-Language': 'en-US,en;q=0.8',
-    #     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101 Firefox/60.0',
-    # }
-    # req = request.Request(url, headers=fake_headers)
-    # response = request.urlopen(req)
-    # html = response.read()
-    # html = html.decode('utf-8', 'ignore')
-    # return html
+def get_json(url):
+    return json.loads(get(url))
 
 
 def get_logger(module):
@@ -71,7 +36,8 @@ def get_logger(module):
         logger.setLevel(level=logging.DEBUG)
 
         # 格式化
-        formatter = logging.Formatter('%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
+        formatter = logging.Formatter(
+            f'%(asctime)s - %(filename)s[line:%(lineno)d] - {module} - %(levelname)s: %(message)s')
 
         # 输出文件
         today = strftime('%m-%d', localtime(time()))
@@ -91,7 +57,7 @@ def get_logger(module):
 
 
 # 关于机器人HTTP API https://cqhttp.cc/docs/4.7/#/API
-async def bot(message):
+def bot(message):
     if enable_bot:
         # 此处要重定义opener，否则会使用代理访问
         # opener1 = request.build_opener()
@@ -105,11 +71,7 @@ async def bot(message):
                 'group_id': _group_id,
                 'message': message
             }
-            msg = json.dumps(_msg).encode('utf-8')
-            net = Aio()
-            await net.main(f'http://{host}/send_group_msg', method='post', headers=headers, msg=msg)
-        # req = (f'http://{host}/send_group_msg', headers=headers, data=msg)
-        # request.urlopen(req)
+            requests.post(f'http://{host}/send_group_msg', data=_msg, headers=headers)
 
 
 class Database:
@@ -133,17 +95,3 @@ class Database:
             f"INSERT INTO StreamLink (ID, Title, Link, Date) VALUES (NULL, '{_title}', '{_link}', '{_date}');")
         self.conn.commit()
         self.logger.info(f"Link: {_link} has been inserted")
-
-
-def file_exist(filename: str) -> str:
-    paths = f'{ddir}/{filename}.ts'
-    if isfile(paths):
-        n = 0
-        while True:
-            new_filename = filename + f'_{n}.ts'
-            if not isfile(f'{ddir}/{new_filename}'):
-                return new_filename
-            else:
-                n += 1
-    else:
-        return filename + '.ts'
