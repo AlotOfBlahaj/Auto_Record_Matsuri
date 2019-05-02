@@ -6,7 +6,7 @@ from lxml.html import etree
 from config import sec
 from daemon import VideoDaemon
 from queues import twitcasting_queue
-from tools import get_logger, get_json
+from tools import get_logger, get_json, get
 
 
 class Twitcasting(VideoDaemon):
@@ -26,7 +26,7 @@ class Twitcasting(VideoDaemon):
 
     @staticmethod
     def get_hsl(twitcasting_id, live_info):
-        html = get_json(f"https://twitcasting.tv/{twitcasting_id}")
+        html = get(f"https://twitcasting.tv/{twitcasting_id}")
         dom = etree.HTML(html)
         title = dom.xpath('/html/body/div[3]/div[2]/div/div[2]/h2/span[3]/a/text()')[0]
         title += '|' + live_info.get('Vid')
