@@ -68,10 +68,17 @@ def bot(message):
         # 此处不应该直接使用HTTP GET的方式传入数据
         for _group_id in group_id:
             _msg = {
-                'group_id': _group_id,
-                'message': message
+                'group_id': int(_group_id),
+                'message': message,
+                'auto_escape': True
             }
-            requests.post(f'http://{host}/send_group_msg', data=_msg, headers=headers)
+            _msg = json.dumps(_msg)
+            r = requests.post(f'http://{host}/send_group_msg', data=_msg, headers=headers)
+            try:
+                assert r.status_code == 200
+            except AssertionError as e:
+                logger = get_logger('Bot')
+                logger.exception(e)
 
 
 class Database:

@@ -1,7 +1,6 @@
 from config import twitcasting_ld, enable_twitcasting, oprec_id, enable_openrec, userid, enable_mirrativ, channel_id, \
     enable_youtube
-from queues import twitcasting_queue, openrec_queue, mirrativ_queue, youtube_queue, youtube_temp_queue
-from tools import Database
+from queues import twitcasting_queue, openrec_queue, mirrativ_queue, youtube_queue
 
 
 class Queue:
@@ -22,9 +21,6 @@ def queue_init():
     if enable_youtube:
         for x in channel_id:
             youtube_queue.put_nowait(x)
-        database = Database()
-        for x in database.select():
-            youtube_temp_queue.put_nowait(x)
     if enable_mirrativ:
         for x in userid:
             mirrativ_queue.put_nowait(x)
@@ -38,7 +34,6 @@ def queue_init():
 
 def queue_map(module):
     queue = {'Youtube': youtube_queue,
-             'YoutubeTemp': youtube_temp_queue,
              'Mirrativ': mirrativ_queue,
              'Twitcasting': twitcasting_queue,
              'Openrec': openrec_queue}

@@ -1,9 +1,10 @@
 import re
 from multiprocessing import Process
+from time import sleep
 
 from config import sec, api_key
 from daemon import VideoDaemon
-from queues import youtube_queue, youtube_temp_queue
+from queues import youtube_queue
 from tools import get, get_json, get_logger, Database
 
 
@@ -84,7 +85,6 @@ class Youtube(VideoDaemon):
 class YoutubeTemp(Youtube):
     def __init__(self):
         super().__init__()
-        VideoDaemon.__init__(self, youtube_temp_queue)
         self.vinfo = None
         self.vid = None
         self.db = Database()
@@ -110,8 +110,15 @@ class YoutubeTemp(Youtube):
             self.put_download(video)
         else:
             self.logger.info(f'Not found Live, after {sec}s checking')
-            self.return_and_sleep(vlink, 'YoutubeTemp')
+            sleep(sec)
 
     def actor(self, vlink):
         proc = Process(target=self.check, args=(vlink,))
         proc.start()
+
+    def daemon(self):
+        db = Database()
+        while True:
+            for vlink in db.select():
+                if vlink:
+                    self.actor(vlink)
