@@ -49,7 +49,8 @@ def bd_upload(file):
 
 
 def downloader(link, title, dl_proxy):
-    co = ["streamlink", "--hls-live-restart", "--loglevel", "trace", "--force"]
+    # co = ["streamlink", "--hls-live-restart", "--loglevel", "trace", "--force"]
+    co = ["streamlink", "--hls-live-restart", "--force"]
     if enable_proxy:
         co.append('--http-proxy')
         co.append(f'http://{dl_proxy}')
