@@ -64,11 +64,11 @@ def downloader(link, title, dl_proxy):
     # 不应该使用os.system
 
 
-def title_block(title):
+def title_block(filename):
     replace_list = ['|', '/', '\\']
     for x in replace_list:
-        title = title.replace(x, '#')
-    return title
+        filename = filename.replace(x, '#')
+    return filename
 
 
 def file_exist(filename: str) -> str:
@@ -84,6 +84,12 @@ def file_exist(filename: str) -> str:
         return filename + '.ts'
 
 
+def filename_length_limit(filename: str) -> str:
+    lens = len(filename)
+    if lens > 80:
+        return filename[:80]
+    return filename
+
 def process_video(data, call_back):
     bot(f"[直播提示] {call_back['Module']}{data.get('Title')} 正在直播 链接: {data['Target']}")
 
@@ -92,6 +98,8 @@ def process_video(data, call_back):
                 'Found A Live, starting downloader')
 
     data['Title'] = title_block(data['Title'])
+    # issue #61
+    data['Title'] = filename_length_limit(data['Title'])
     # issue #37
     data['Title'] = file_exist(data['Title'])
 
@@ -106,7 +114,7 @@ def process_video(data, call_back):
     bot(f"[下载提示] {data['Title']} 已下载完成，等待上传")
 
     link = bd_upload(f"{data['Title']}")
-    database = Database()
+    database = Database('Video')
     if not call_back['Module'] == 'Mirrativ':
         if link:
             database.insert(data['Title'], link, data['Date'])
