@@ -111,16 +111,11 @@ class YoutubeTemp(Youtube):
             self.put_download(video)
         else:
             self.logger.info(f'Not found Live, after {sec}s checking')
-            sleep(sec)
-
-    def actor(self, vlink):
-        proc = Process(target=self.check, args=(vlink,))
-        proc.start()
-        proc.join()
 
     def daemon(self):
         db = Database('Queues')
         while True:
-            for vlink in db.select():
-                if vlink:
-                    self.actor(vlink)
+            for x in db.select():
+                self.check(x)
+            self.logger.info('A check has finished.')
+            sleep(sec)
