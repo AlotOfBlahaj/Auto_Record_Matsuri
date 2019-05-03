@@ -87,7 +87,7 @@ class YoutubeTemp(Youtube):
         super().__init__()
         self.vinfo = None
         self.vid = None
-        self.db = Database()
+        self.db = Database('Queues')
         self.logger = get_logger('YoutubeTemp')
 
     @staticmethod
