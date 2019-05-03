@@ -67,7 +67,7 @@ def downloader(link, title, dl_proxy):
 def title_block(title):
     replace_list = ['|', '/', '\\']
     for x in replace_list:
-        title.replace(x, '#')
+        title = title.replace(x, '#')
     return title
 
 
