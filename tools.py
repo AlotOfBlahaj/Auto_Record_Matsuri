@@ -1,11 +1,12 @@
 import json
 import logging
-import sqlite3
 from os import mkdir
 from os.path import abspath, dirname
 from time import strftime, localtime, time
 
+import pymongo
 import requests
+from bson import ObjectId
 
 from config import enable_bot, host, group_id, proxy, enable_proxy
 
@@ -82,23 +83,23 @@ def bot(message):
 
 
 class Database:
-    def __init__(self):
-        self.conn = sqlite3.connect('ref.db')
-        self.cursor = self.conn.cursor()
+    def __init__(self, db: str):
+        client = pymongo.MongoClient("mongodb://127.0.0.1:27017/")
+        _db = client["Video"]
+        self.db = _db[db]
         self.logger = get_logger('Database')
 
     def select(self):
-        self.cursor.execute('SELECT ID,REF FROM Youtube')
-        values = self.cursor.fetchall()
+        values = self.db.find()
         return values
 
     def delete(self, _id):
-        self.cursor.execute(f'DELETE FROM Youtube WHERE ID = {_id};')
-        self.conn.commit()
+        self.db.delete_one({"_id": ObjectId(_id)})
         self.logger.info(f"ID: {_id} has been deleted")
 
     def insert(self, _title, _link, _date):
-        self.cursor.execute(
-            f"INSERT INTO StreamLink (ID, Title, Link, Date) VALUES (NULL, '{_title}', '{_link}', '{_date}');")
-        self.conn.commit()
-        self.logger.info(f"Link: {_link} has been inserted")
+        vdict = {"Title": _title,
+                 "Link": _link,
+                 "Date": _date}
+        result = self.db.insert_one(vdict)
+        self.logger.info(result)
