@@ -15,7 +15,7 @@ class Youtube(VideoDaemon):
         # self.channel_id = channel_id
         self.api_key = api_key
         # 品质设置
-        self.database = Database()
+        self.database = Database('Queues')
         self.logger = get_logger('Youtube')
 
     # 关于SearchAPI的文档 https://developers.google.com/youtube/v3/docs/search/list
@@ -94,7 +94,8 @@ class YoutubeTemp(Youtube):
     def get_temp_vid(vlink):
         reg = r"watch\?v=([A-Za-z0-9_-]{11})"
         idre = re.compile(reg)
-        _id, vid = vlink
+        _id = vlink["_id"]
+        vid = vlink["Link"]
         vid = re.search(idre, vid).group(1)
         return {'Vid': vid,
                 'Id': _id}
@@ -115,9 +116,10 @@ class YoutubeTemp(Youtube):
     def actor(self, vlink):
         proc = Process(target=self.check, args=(vlink,))
         proc.start()
+        proc.join()
 
     def daemon(self):
-        db = Database()
+        db = Database('Queues')
         while True:
             for vlink in db.select():
                 if vlink:
