@@ -3,6 +3,10 @@ Auto_Record_Matsuri [![Build Status](https://travis-ci.org/fzxiao233/Auto_Record
 此程序能够自动监控夏妹直播并下载当前的直播视频（其实你也可以修改其中的频道编号来监控其他VTB[臭DD]
 目前我已经在VPS上部署了，你可以通过访问http://matsuri.fzxiao.tw 获取录播
 
+特性
+----
+- 使用多进程模型，同时监控多个Vtuber占用较低（DD）
+
     
 功能
 ----
@@ -16,6 +20,8 @@ Auto_Record_Matsuri [![Build Status](https://travis-ci.org/fzxiao233/Auto_Record
 
 使用
 ------
+- 请务必在启动前编辑config.py文件
+
 - 首次启动或更新时
 
 	    $ pip3 install -r requirements.txt
@@ -29,7 +35,4 @@ Auto_Record_Matsuri [![Build Status](https://travis-ci.org/fzxiao233/Auto_Record
 
 支持
 ------
-- 设置，请编辑config.py
-
-
-有问题或者新功能请发Issues，有时间就修（鸽了
+- 有问题或者新功能请求请发Issues
