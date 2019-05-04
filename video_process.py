@@ -4,7 +4,7 @@ from os import name
 from os.path import isfile
 from time import strftime, localtime, time
 
-from config import enable_upload, ddir, enable_proxy, proxy
+from config import enable_upload, ddir, enable_proxy, proxy, enable_db
 from queues_process import queue_map, Queue
 from tools import ABSPATH
 from tools import get_logger, bot, Database
@@ -114,10 +114,12 @@ def process_video(data, call_back):
     bot(f"[下载提示] {data['Title']} 已下载完成，等待上传")
 
     link = bd_upload(f"{data['Title']}")
-    database = Database('Video')
+    if enable_db:
+        database = Database('Video')
     if not call_back['Module'] == 'Mirrativ':
         if link:
-            database.insert(data['Title'], link, data['Date'])
+            if enable_db:
+                database.insert(data['Title'], link, data['Date'])
         bot(f"[下载提示] {data['Title']} 已上传, 请查看页面")
     else:
         bot(f"[下载提示] {data['Title']} 已上传" + link)
