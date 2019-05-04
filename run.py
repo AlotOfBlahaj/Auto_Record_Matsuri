@@ -2,7 +2,8 @@ from multiprocessing import Process
 from time import sleep
 
 from bilibili import Bilibili
-from config import enable_youtube, enable_twitcasting, enable_openrec, enable_mirrativ, enable_bilibili
+from config import enable_youtube, enable_twitcasting, enable_openrec, enable_mirrativ, enable_bilibili, \
+    enable_youtube_temp
 from daemon import VideoDownload
 from mirrativ import Mirrativ
 from openrec import Openrec
@@ -16,7 +17,8 @@ class Event:
         self.events = [Process(target=self.start_downloader)]
         if enable_youtube:
             self.events.append(Process(target=self.start_youtube))
-            self.events.append(Process(target=self.start_youtube_temp))
+            if enable_youtube_temp:
+                self.events.append(Process(target=self.start_youtube_temp))
         if enable_twitcasting:
             self.events.append(Process(target=self.start_twitcasting))
         if enable_openrec:

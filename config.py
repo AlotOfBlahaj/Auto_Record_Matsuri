@@ -20,8 +20,12 @@ bilibili_id = ['336731767']
 sec = 15
 # 错误间隔时间（s）
 sec_error = 5
+# 是否启用mongodb数据库 0/1 注：如未部署请与youtube_temp模块一起保持关闭
+enable_db = 0
 # 是否开启youtube监控 0/1
 enable_youtube = 1
+# 是否启用youtube补充模块 0/1 注：如未部署mongodb请保持关闭
+enable_youtube_temp = 0
 # 是否开启mirrativ监控 0/1
 enable_mirrativ = 1
 # 是否开启openrec监控 0/1
