@@ -18,6 +18,7 @@ class Bilibili:
             video_num = self.API.get_video_num(mid)
             if video_num > self.old_video_num:
                 self.logger.info('Found A new video')
+                sleep(10)  # 需要增加延迟，反正B站API未即时更新，导致返回上一个视频
                 video_info = self.API.get_video(mid)
                 bot(f'[烤肉提示] [Bilibili]{video_info.get("Title")} 链接: {video_info.get("Ref")}')
                 self.old_video_num = video_num
