@@ -1,68 +1,45 @@
-import sqlite3
-
-from flask import Flask, render_template, g, redirect
+from flask import Flask, render_template, redirect
+from flask_pymongo import PyMongo, ObjectId
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import ValidationError, URL
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'test'
+app.config["MONGO_URI"] = "mongodb://149.129.79.176:27017/Video"
+db = PyMongo(app)
 
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     ref = None
     form = RefForm()
-    cursor = g.db.execute("SELECT * FROM Youtube")
-    data_current = cursor.fetchall()
-    cursor = g.db.execute("SELECT * FROM StreamLink")
-    url_current = cursor.fetchall()
+    finished_live = db.db.Video.find()
+    queues = db.db.Queues.find()
     if form.validate_on_submit():
         ref = form.ref.data
         form.ref.data = ''
-        cursor = g.db.execute(f"INSERT INTO Youtube (ID, REF) VALUES (NULL,'{ref}')")
-        g.db.commit()
+        db.db.Queues.insert({'Link': ref})
         return redirect('/')
-    return render_template('index.html', form=form, ref=ref, data_current=data_current, url_current=url_current)
+    return render_template('index.html', form=form, ref=ref, queues=queues, finished_live=finished_live)
 
 
 @app.route('/delete/<_id>')
 def delete(_id):
-    cursor = g.db.execute(f'DELETE FROM Youtube WHERE ID = {_id}')
-    g.db.commit()
+    db.db.Queues.delete_one({"_id": ObjectId(_id)})
     return redirect('/')
 
 
 class RefForm(FlaskForm):
-    ref = StringField('', validators=[URL])
-    submit = SubmitField('Submit')
+    ref = StringField('Youtube链接', validators=[URL])
+    submit = SubmitField('提交')
 
     def validate_ref(self, field):
         data = field.data
-        cursor = g.db.execute("SELECT * FROM Youtube")
-        current = cursor.fetchall()
-        for ref in current:
-            if data == ref[1]:
-                raise ValidationError("Error: The link has existed")
         if 'www.youtube.com/watch?v=' not in data:
             raise ValidationError("Error: You need to input a Youtube LIVE link")
         if 'https://' not in data:
             raise ValidationError("Error: You need to input a link with 'https://'")
-
-
-def connect_db():
-    return sqlite3.connect('ref.db')
-
-
-@app.before_request
-def before_request():
-    g.db = connect_db()
-
-
-@app.after_request
-def after_request(response):
-    g.db.close()
-    return response
 
 
 if __name__ == '__main__':
