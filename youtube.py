@@ -74,9 +74,9 @@ class Youtube(VideoDaemon):
             # await process_video(get_live_info, 'Youtube')
         else:
             if 'Upcoming live streams' in html:
-                self.logger.info(f'Found A Live Upcoming, after {sec}s checking')
+                self.logger.info(f'{channel_id}: Found A Live Upcoming, after {sec}s checking')
             else:
-                self.logger.info(f'Not found Live, after {sec}s checking')
+                self.logger.info(f'{channel_id}: Not found Live, after {sec}s checking')
             self.return_and_sleep(channel_id, self.module)
 
     def actor(self, channel_id):
