@@ -35,10 +35,10 @@ def get_logger(module):
     logger = logging.getLogger(module)
     if not logger.handlers:
         logger.setLevel(level=logging.DEBUG)
-
+        timestamp = strftime("[%H:%M:%S]", localtime())
         # 格式化
         formatter = logging.Formatter(
-            f'%(asctime)s - %(filename)s[line:%(lineno)d] - {module} - %(levelname)s: %(message)s')
+            f'{timestamp}[%(levelname)s]: %(filename)s[line:%(lineno)d] - {module}: %(message)s')
 
         # 输出文件
         today = strftime('%m-%d', localtime(time()))

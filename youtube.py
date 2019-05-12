@@ -13,6 +13,7 @@ class Youtube(VideoDaemon):
     def __init__(self):
         super().__init__(youtube_queue)
         # self.channel_id = channel_id
+        self.module = 'Youtube'
         self.api_key = api_key
         # 品质设置
         self.database = Database('Queues')
@@ -27,8 +28,8 @@ class Youtube(VideoDaemon):
         try:
             item = channel_info['items'][0]
         except KeyError:
-            self.logger.error('Get vid error')
-            raise RuntimeError('Get vid error')
+            self.logger.exception('Get vid error')
+            raise RuntimeError
         title = item['snippet']['title']
         title = title.replace("/", " ")
         vid = item['id']['videoId']
@@ -69,13 +70,14 @@ class Youtube(VideoDaemon):
                 self.put_download(video)
             except RuntimeError:
                 self.logger.error('Getting Live Failed, waiting 5s to retry')
+                self.to_queue(channel_id, self.module)
             # await process_video(get_live_info, 'Youtube')
         else:
             if 'Upcoming live streams' in html:
-                self.logger.info(f'Found A Live Upcoming, after {sec}s checking')
+                self.logger.info(f'{channel_id}: Found A Live Upcoming, after {sec}s checking')
             else:
-                self.logger.info(f'Not found Live, after {sec}s checking')
-            self.return_and_sleep(channel_id, 'Youtube')
+                self.logger.info(f'{channel_id}: Not found Live, after {sec}s checking')
+            self.return_and_sleep(channel_id, self.module)
 
     def actor(self, channel_id):
         proc = Process(target=self.check, args=(channel_id,))

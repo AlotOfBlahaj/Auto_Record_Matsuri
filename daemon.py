@@ -48,7 +48,10 @@ class VideoDaemon:
         pass
 
     @staticmethod
-    def return_and_sleep(item, module):
-        sleep(sec)
+    def to_queue(item, module):
         q = Queue(queue_map(module))
         q.put_nowait(item)
+
+    def return_and_sleep(self, item, module):
+        sleep(sec)
+        self.to_queue(item, module)
