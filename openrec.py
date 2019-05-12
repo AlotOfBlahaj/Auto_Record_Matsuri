@@ -28,10 +28,12 @@ class Openrec(VideoDaemon):
             title = dom.xpath('/html/body/div[1]/div[2]/div[18]/div[2]/div/div[3]/ul/li[1]/ul/li/a[2]/text()')[0]
             target = ref
             date = time.strftime("%Y-%m-%d", time.localtime())
-            return {'Title': title,
-                    'Ref': ref,
-                    'Target': target,
-                    'Date': date}
+            live_dict = {'Title': title,
+                         'Ref': ref,
+                         'Target': target,
+                         'Date': date}
+            return live_dict
+        return None
 
     def check(self, oprec_id):
         is_live = self.is_live(oprec_id)

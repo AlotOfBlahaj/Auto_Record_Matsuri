@@ -4,7 +4,7 @@ from multiprocessing import Process
 from config import sec
 from daemon import VideoDaemon
 from queues import twitcasting_queue
-from tools import get_logger, get_json, get
+from tools import get_logger, get_json
 
 
 class Twitcasting(VideoDaemon):
@@ -25,7 +25,7 @@ class Twitcasting(VideoDaemon):
 
     @staticmethod
     def get_hsl(twitcasting_id, live_info):
-        html = get(f"https://twitcasting.tv/{twitcasting_id}")
+        # html = get(f"https://twitcasting.tv/{twitcasting_id}")
         # dom = etree.HTML(html)
         # title = dom.xpath('/html/body/div[3]/div[2]/div/div[2]/h2/span[3]/a/text()')[0]
         title = twitcasting_id + live_info.get('Vid')

@@ -12,13 +12,16 @@ class Mirrativ(VideoDaemon):
     def __init__(self):
         super().__init__(mirrativ_queue)
         self.logger = get_logger('Mirrativ')
+        self.module = 'Mirrativ'
 
-    @staticmethod
-    def get_live_info(userid):
+    def get_live_info(self, userid):
         live_info = get_json(f'https://www.mirrativ.com/api/user/profile?user_id={userid}')
         nowlive = live_info['onlive']
-        if nowlive:
-            return nowlive['live_id']
+        try:
+            live_id = nowlive['live_id']
+            return live_id
+        except KeyError:
+            self.logger.exception('Get live info error')
 
     @staticmethod
     def get_hsl(is_live):
@@ -27,10 +30,11 @@ class Mirrativ(VideoDaemon):
         steaming_url = hsl_info['streaming_url_hls']
         target = hsl_info['share_url']
         date = time.strftime("%Y-%m-%d", time.localtime())
-        return {'Title': title,
-                'Ref': steaming_url,
-                'Target': target,
-                'Date': date}
+        live_dict = {'Title': title,
+                     'Ref': steaming_url,
+                     'Target': target,
+                     'Date': date}
+        return live_dict
 
     def check(self, userid):
         is_live = self.get_live_info(userid)
