@@ -23,7 +23,7 @@ class Bilibili:
                 bot(f'[烤肉提示] [Bilibili]{video_info.get("Title")} 链接: {video_info.get("Ref")}')
                 self.old_video_num = video_num
             else:
-                self.logger.info(f'Not found new videos, {mid}:{video_num}')
+                self.logger.info(f'{mid}:{video_num} Not found new videos')
             sleep(sec)
 
     def actor(self, b_id):
