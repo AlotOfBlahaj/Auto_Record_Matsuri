@@ -13,6 +13,7 @@ class Openrec(VideoDaemon):
     def __init__(self):
         super().__init__(openrec_queue)
         self.logger = get_logger('Openrec')
+        self.module = 'Openrec'
 
     @staticmethod
     def is_live(oprec_id):
@@ -40,8 +41,8 @@ class Openrec(VideoDaemon):
         if is_live:
             self.put_download([is_live, {'Module': 'Openrec', 'Target': oprec_id}])
         else:
-            self.logger.info(f'Not found Live, after {sec}s checking')
-            self.return_and_sleep(oprec_id, 'Openrec')
+            self.logger.info(f'{oprec_id}: Not found Live, after {sec}s checking')
+            self.return_and_sleep(oprec_id, self.module)
 
     def actor(self, oprec_id):
         proc = Process(target=self.check, args=(oprec_id,))

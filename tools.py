@@ -7,9 +7,8 @@ from time import strftime, localtime, time
 import pymongo
 import requests
 from bson import ObjectId
-from retrying import retry
 
-from config import enable_bot, host, group_id, proxy, enable_proxy, sec_error
+from config import enable_bot, host, group_id, proxy, enable_proxy
 
 ABSPATH = dirname(abspath(__file__))
 fake_headers = {
@@ -22,35 +21,24 @@ proxies = {
 }
 
 
-@retry(wait_fixed=sec_error)
-def get(url: str) -> str:
-    try:
-        if enable_proxy:
-            r = requests.get(url, headers=fake_headers, proxies=proxies)
-        else:
-            r = requests.get(url, headers=fake_headers)
-        return r.text
-    except requests.RequestException:
-        logger = get_logger('Requests')
-        logger.exception('Network Error')
+def get(url):
+    if enable_proxy:
+        return requests.get(url, headers=fake_headers, proxies=proxies).text
+    return requests.get(url, headers=fake_headers).text
 
 
-def get_json(url: str) -> dict:
-    try:
-        return json.loads(get(url))
-    except json.decoder.JSONDecodeError:
-        logger = get_logger('Json')
-        logger.exception('Load Json Error')
+def get_json(url):
+    return json.loads(get(url))
 
 
 def get_logger(module):
     logger = logging.getLogger(module)
     if not logger.handlers:
         logger.setLevel(level=logging.DEBUG)
-
+        timestamp = strftime("[%H:%M:%S]", localtime())
         # 格式化
         formatter = logging.Formatter(
-            f'%(asctime)s - %(filename)s[line:%(lineno)d] - {module} - %(levelname)s: %(message)s')
+            f'{timestamp}[%(levelname)s]: %(filename)s[line:%(lineno)d] - {module}: %(message)s')
 
         # 输出文件
         today = strftime('%m-%d', localtime(time()))
@@ -86,9 +74,10 @@ def bot(message):
                 'auto_escape': True
             }
             _msg = json.dumps(_msg)
+            r = requests.post(f'http://{host}/send_group_msg', data=_msg, headers=headers)
             try:
-                requests.post(f'http://{host}/send_group_msg', data=_msg, headers=headers)
-            except requests.exceptions.RequestException as e:
+                assert r.status_code == 200
+            except AssertionError as e:
                 logger = get_logger('Bot')
                 logger.exception(e)
 

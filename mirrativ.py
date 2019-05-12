@@ -43,8 +43,9 @@ class Mirrativ(VideoDaemon):
         if is_live:
             is_live = self.get_hsl(is_live)
             return is_live, {'Module': 'Mirrativ', 'Target': userid}
-        self.logger.info(f'Not found Live, after {sec}s checking')
-        self.return_and_sleep(userid, 'Mirrativ')
+        self.logger.info(f'{userid}: Not found Live, after {sec}s checking')
+        self.return_and_sleep(userid, self.module)
+        return None
 
     def actor(self, userid):
         proc = Process(target=self.check, args=(userid,))

@@ -41,9 +41,9 @@ class Twitcasting(VideoDaemon):
         live_info = self.live_info(twitcasting_id)
         if live_info.get('Is_live'):
             result = self.get_hsl(twitcasting_id, live_info)
-            self.put_download([result, {'Module': 'Twitcasting', 'Target': self.module}])
+            self.put_download([result, {'Module': 'Twitcasting', 'Target': twitcasting_id}])
         else:
-            self.logger.info(f'Not found Live, after {sec}s checking')
+            self.logger.info(f'{twitcasting_id}: Not found Live, after {sec}s checking')
             self.return_and_sleep(twitcasting_id, self.module)
 
     def actor(self, twitcasting_id):
