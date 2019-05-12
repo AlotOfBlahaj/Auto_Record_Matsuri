@@ -18,8 +18,10 @@ class Mirrativ(VideoDaemon):
         live_info = get_json(f'https://www.mirrativ.com/api/user/profile?user_id={userid}')
         nowlive = live_info['onlive']
         try:
-            live_id = nowlive['live_id']
-            return live_id
+            if nowlive:
+                live_id = nowlive['live_id']
+                return live_id
+            return None
         except KeyError:
             self.logger.exception('Get live info error')
 
