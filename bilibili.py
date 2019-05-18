@@ -2,7 +2,7 @@ from multiprocessing import Process
 from time import sleep
 
 from bilibili_api.bilibili_api import BilibiliAPI
-from config import bilibili_id, sec
+from config import sec
 from tools import get_logger, bot
 
 
@@ -29,7 +29,3 @@ class Bilibili:
     def actor(self, b_id):
         proc = Process(target=self.check, args=(b_id,))
         proc.start()
-
-    def manager(self):
-        for b_id in bilibili_id:
-            self.actor(b_id)

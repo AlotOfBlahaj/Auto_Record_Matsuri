@@ -1,57 +1,38 @@
+from abc import ABCMeta, abstractmethod
 from multiprocessing import Process
-from time import sleep
 
-from config import sec
-from queues import download_queue
-from queues_process import Queue, queue_map
+from queues import upload_queue
 from tools import get_logger
-from video_process import process_video
+from video_process import upload_video
 
 
-class VideoDownload:
+class VideoUpload(Process):
     def __init__(self):
-        self.queue = Queue(download_queue)
-        self.logger = get_logger('VideoDownload')
-        self.daemon()
+        super().__init__()
+        self.queue = upload_queue
+        self.logger = get_logger('VideoUpload')
+        self.video_info = None
 
-    @staticmethod
-    def download(video_info):
-        proc = Process(target=process_video, args=video_info)
-        proc.start()
+    def run(self) -> None:
+        self.start_daemon()
 
-    def daemon(self):
+    def start_daemon(self):
+        self.logger.info('Waiting for tasks')
         while True:
-            self.logger.info('Waiting for tasks')
             video_info = self.queue.get()
-            self.download(video_info)
+            self.video_info = video_info
+            upload_video(self.video_info)
 
 
-class VideoDaemon:
-    def __init__(self, queue):
-        self.queue = Queue(queue)
-        self.download_queue = Queue(download_queue)
+class VideoDaemon(Process, metaclass=ABCMeta):
+    def __init__(self, target_id):
+        super().__init__()
+        self.target_id = target_id
 
-    def put_download(self, video):
-        self.download_queue.put_nowait(video)
-
-    def daemon(self):
-        while True:
-            live_info = self.queue.get()
-            self.actor(live_info)
-
-    def actor(self, live_info):
-        pass
-        # proc = Process(target=self.check, args=(,))
-        # proc.start()
-
-    def check(self, live_info):
+    @abstractmethod
+    def run(self) -> None:
         pass
 
-    @staticmethod
-    def to_queue(item, module):
-        q = Queue(queue_map(module))
-        q.put_nowait(item)
-
-    def return_and_sleep(self, item, module):
-        sleep(sec)
-        self.to_queue(item, module)
+    @abstractmethod
+    def check(self):
+        pass

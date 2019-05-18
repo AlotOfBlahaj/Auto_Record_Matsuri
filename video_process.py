@@ -2,10 +2,9 @@ import re
 import subprocess
 from os import name
 from os.path import isfile
-from time import sleep
 
 from config import enable_upload, ddir, enable_proxy, proxy, enable_db
-from queues_process import queue_map, Queue
+from queues import upload_queue
 from tools import ABSPATH
 from tools import get_logger, bot, Database
 
@@ -112,38 +111,38 @@ class AdjustFileName:
         return self.filename
 
 
-def process_video(video_dict, call_back):
+def upload_video(video_dict):
+    share_url = bd_upload(video_dict['Title'])
+    if share_url:
+        if enable_db:
+            db = Database('Video')
+            db.insert(video_dict['Title'], share_url, video_dict['Date'])
+        bot(f"[下载提示] {video_dict['Title']} 已上传, 请查看页面")
+    else:
+        raise RuntimeError(f'Upload {video_dict["Title"]} failed')
+
+
+def process_video(video_dict):
     """
     处理直播视频，包含bot的发送，视频下载，视频上传和存入数据库
     :param video_dict: 含有直播视频数据的dict
     :param call_back: 用于标识传入来源
     :return: None
     """
-    bot(f"[直播提示] {call_back['Module']}{video_dict.get('Title')} 正在直播 链接: {video_dict['Target']}")
+    bot(f"[直播提示] {video_dict['Provide']}{video_dict.get('Title')} 正在直播 链接: {video_dict['Target']}")
 
     logger = get_logger('Process Video')
-    logger.info(f'{call_back["Module"]} Found A Live, starting downloader')
+    logger.info(f'{video_dict["Provide"]} Found A Live, starting downloader')
 
     video_dict['Title'] = AdjustFileName(video_dict['Title']).adjust()
-    try:
-        if call_back['Module'] == 'Youtube':
-            downloader(r"https://www.youtube.com/watch?v=" + video_dict['Ref'], video_dict['Title'], proxy, '720p')
-        else:
-            downloader(video_dict['Ref'], video_dict['Title'], proxy)
-        link = bd_upload(f"{video_dict['Title']}")
-        if link:
-            if enable_db:
-                db = Database('Video')
-                db.insert(video_dict['Title'], link, video_dict['Date'])
-            bot(f"[下载提示] {video_dict['Title']} 已上传, 请查看页面")
-    except RuntimeError:
-        return None
-    finally:
-        sleep(1)
-        return_queue(call_back)
-
-
-def return_queue(call_back):
-    if call_back['Target']:
-        q = Queue(queue_map(call_back['Module']))
-        q.put_nowait(call_back['Target'])
+    if video_dict["Provide"] == 'Youtube':
+        downloader(r"https://www.youtube.com/watch?v=" + video_dict['Ref'], video_dict['Title'], proxy, '720p')
+    else:
+        downloader(video_dict['Ref'], video_dict['Title'], proxy)
+    upload_queue.put_nowait(video_dict)
+    # link = bd_upload(f"{video_dict['Title']}")
+    # if link:
+    #     if enable_db:
+    #         db = Database('Video')
+    #         db.insert(video_dict['Title'], link, video_dict['Date'])
+    #     bot(f"[下载提示] {video_dict['Title']} 已上传, 请查看页面")

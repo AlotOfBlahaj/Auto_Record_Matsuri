@@ -3,82 +3,85 @@ from time import sleep
 
 from bilibili import Bilibili
 from config import enable_youtube, enable_twitcasting, enable_openrec, enable_mirrativ, enable_bilibili, \
-    enable_youtube_temp
-from daemon import VideoDownload
+    enable_youtube_temp, channel_id, userid, oprec_id, twitcasting_ld, bilibili_id, sec
+from daemon import VideoUpload
 from mirrativ import Mirrativ
 from openrec import Openrec
-from queues_process import queue_init
+from tools import get_logger
 from twitcasting import Twitcasting
-from youtube import Youtube, YoutubeTemp
+from youtube import Youtube, start_temp_daemon
 
 
 class Event:
     def __init__(self):
-        self.events = [Process(target=self.start_downloader)]
+        self.logger = get_logger('Event')
+        self.events_no_need_while = []
+        self.events_need_while = []
         if enable_youtube:
-            self.events.append(Process(target=self.start_youtube))
-            if enable_youtube_temp:
-                self.events.append(Process(target=self.start_youtube_temp))
+            self.events_need_while.append(self.start_youtube)
+        if enable_youtube_temp:
+            self.events_no_need_while.append(Process(target=self.start_youtube_temp))
         if enable_twitcasting:
-            self.events.append(Process(target=self.start_twitcasting))
+            self.events_need_while.append(self.start_twitcasting)
         if enable_openrec:
-            self.events.append(Process(target=self.start_openrec))
+            self.events_need_while.append(self.start_openrec)
         if enable_mirrativ:
-            self.events.append(Process(target=self.start_mirrativ))
+            self.events_need_while.append(self.start_mirrativ)
         if enable_bilibili:
-            self.events.append(Process(target=self.start_bilibili))
-        self.running = False
+            self.events_no_need_while.append(Process(target=self.start_bilibili))
 
     def start(self):
-        for proc in self.events:
+        self.start_no_need_while()
+        while True:
+            self.start_need_while()
+            self.logger.info(f'Next Check: {sec}')
+            sleep(sec)
+
+    def start_no_need_while(self):
+        for proc in self.events_no_need_while:
             proc.start()
-        self.running = True
+
+    def start_need_while(self):
+        for proc in self.events_need_while:
+            proc()
 
     @staticmethod
     def start_youtube():
-        y = Youtube()
-        y.daemon()
+        for target_id in channel_id:
+            y = Youtube(target_id)
+            y.start()
 
     @staticmethod
     def start_youtube_temp():
-        y_temp = YoutubeTemp()
-        y_temp.daemon()
+        start_temp_daemon()
 
     @staticmethod
     def start_mirrativ():
-        m = Mirrativ()
-        m.daemon()
+        for target_id in userid:
+            m = Mirrativ(target_id)
+            m.start()
 
     @staticmethod
     def start_openrec():
-        o = Openrec()
-        o.daemon()
+        for target_id in oprec_id:
+            o = Openrec(target_id)
+            o.start()
 
     @staticmethod
     def start_twitcasting():
-        t = Twitcasting()
-        t.daemon()
-
-    @staticmethod
-    def start_downloader():
-        d = VideoDownload()
-        d.daemon()
+        for target_id in twitcasting_ld:
+            t = Twitcasting(target_id)
+            t.start()
 
     @staticmethod
     def start_bilibili():
-        b = Bilibili()
-        b.manager()
-
-    def check(self):
-        while self.running:
-            for proc in self.events:
-                if not proc.is_alive():
-                    print('End')
-            sleep(5)
+        for b_id in bilibili_id:
+            b = Bilibili()
+            b.actor(b_id)
 
 
 if __name__ == '__main__':
-    queue_init()
+    uploader = VideoUpload()
+    uploader.start()
     e = Event()
     e.start()
-    e.check()

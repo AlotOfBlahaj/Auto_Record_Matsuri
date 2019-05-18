@@ -1,18 +1,16 @@
 import re
-from multiprocessing import Process
 from time import sleep
 
 from config import sec, api_key
 from daemon import VideoDaemon
-from queues import youtube_queue
 from tools import get, get_json, get_logger, Database
+from video_process import process_video
 
 
 class Youtube(VideoDaemon):
 
-    def __init__(self):
-        super().__init__(youtube_queue)
-        # self.channel_id = channel_id
+    def __init__(self, target_id):
+        super().__init__(target_id)
         self.module = 'Youtube'
         self.api_key = api_key
         # 品质设置
@@ -36,10 +34,12 @@ class Youtube(VideoDaemon):
         date = item['snippet']['publishedAt']
         date = date[0:10]
         target = f"https://www.youtube.com/watch?v={vid}"
+        thumbnails = item['snippet']['thumbnails']['high']['url']
         return {'Title': title,
                 'Ref': vid,
                 'Date': date,
-                'Target': target}
+                'Target': target,
+                'Thumbnails': thumbnails}
 
     def getlive_title(self, vid):
         live_info = get_json(rf'https://www.googleapis.com/youtube/v3/videos?id={vid}&key={self.api_key}&'
@@ -59,35 +59,30 @@ class Youtube(VideoDaemon):
                 'Target': target,
                 'Date': date}
 
-    def check(self, channel_id):
-        html = get(f'https://www.youtube.com/channel/{channel_id}/featured')
+    def check(self):
+        html = get(f'https://www.youtube.com/channel/{self.target_id}/featured')
         if '"label":"LIVE NOW"' in html:
             # vid = self.get_videoid_by_channel_id()
             # get_live_info = self.getlive_vid(vid)
-            try:
-                live_info = self.get_videoid_by_channel_id(channel_id)
-                video = [live_info, {'Module': 'Youtube', 'Target': channel_id}]
-                self.put_download(video)
-            except RuntimeError:
-                self.logger.error('Getting Live Failed, waiting 5s to retry')
-                self.to_queue(channel_id, self.module)
+            video_dict = self.get_videoid_by_channel_id(self.target_id)
+            video_dict['Provide'] = self.module
+            process_video(video_dict)
+            self.logger.error('Getting Live Failed, waiting 5s to retry')
             # await process_video(get_live_info, 'Youtube')
         else:
             if 'Upcoming live streams' in html:
-                self.logger.info(f'{channel_id}: Found A Live Upcoming, after {sec}s checking')
+                self.logger.info(f'{self.target_id}: Found A Live Upcoming')
             else:
-                self.logger.info(f'{channel_id}: Not found Live, after {sec}s checking')
-            self.return_and_sleep(channel_id, self.module)
+                self.logger.info(f'{self.target_id}: Not found Live')
 
-    def actor(self, channel_id):
-        proc = Process(target=self.check, args=(channel_id,))
-        proc.start()
+    def run(self) -> None:
+        self.check()
 
 
 class YoutubeTemp(Youtube):
-    def __init__(self):
-        super().__init__()
-        self.vinfo = None
+    def __init__(self, vinfo):
+        super().__init__(None)
+        self.vinfo = vinfo
         self.vid = None
         self.db = Database('Queues')
         self.logger = get_logger('YoutubeTemp')
@@ -102,22 +97,37 @@ class YoutubeTemp(Youtube):
         return {'Vid': vid,
                 'Id': _id}
 
-    def check(self, vlink):
-        self.vinfo = self.get_temp_vid(vlink)
+    def check(self):
+        self.vinfo = self.get_temp_vid(self.vinfo)
         self.vid = self.vinfo['Vid']
         html = get("https://www.youtube.com/watch?v=" f"{self.vid}")
         if r'"isLive\":true' in html:
-            live_info = self.getlive_title(self.vid)
-            video = [live_info, {'Module': 'Youtube', 'Target': None}]
-            self.db.delete(self.vinfo['Id'])
-            self.put_download(video)
+            video_dict = self.getlive_title(self.vid)
+            process_video(video_dict)
+            self.db.delete(self.vinfo)
         else:
-            self.logger.info(f'Not found Live, after {sec}s checking')
+            self.logger.info(f'Not found Live')
 
-    def daemon(self):
-        db = Database('Queues')
-        while True:
-            for x in db.select():
-                self.check(x)
-            self.logger.info('A check has finished.')
-            sleep(sec)
+    def run(self) -> None:
+        self.check()
+
+
+def start_temp_daemon():
+    db = Database('Queues')
+    while True:
+        event = []
+        for target_url in db.select():
+            p = YoutubeTemp(target_url)
+            event.append(p)
+            p.start()
+        is_running = True
+        while is_running:
+            has_running = False
+            for p in event:
+                if p.is_alive():
+                    has_running = True
+            if not has_running:
+                is_running = False
+        logger = get_logger('YoutubeTemp')
+        logger.info('A check has finished.')
+        sleep(sec)
