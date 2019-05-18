@@ -1,23 +1,20 @@
 import time
-from multiprocessing import Process
 
 from lxml.html import etree
 
-from config import sec
 from daemon import VideoDaemon
-from queues import openrec_queue
 from tools import get_logger, get
+from video_process import process_video
 
 
 class Openrec(VideoDaemon):
-    def __init__(self):
-        super().__init__(openrec_queue)
+    def __init__(self, target_id):
+        super().__init__(target_id)
         self.logger = get_logger('Openrec')
         self.module = 'Openrec'
 
-    @staticmethod
-    def is_live(oprec_id):
-        html = get(f'https://www.openrec.tv/user/{oprec_id}')
+    def is_live(self):
+        html = get(f'https://www.openrec.tv/user/{self.target_id}')
         dom = etree.HTML(html)
         try:
             is_live = dom.xpath('/html/body/div[1]/div[2]/div[18]/div[2]/div/div[3]/ul/li[1]/div/text()')[0]
@@ -36,14 +33,14 @@ class Openrec(VideoDaemon):
             return live_dict
         return None
 
-    def check(self, oprec_id):
-        is_live = self.is_live(oprec_id)
+    def check(self):
+        is_live = self.is_live()
         if is_live:
-            self.put_download([is_live, {'Module': 'Openrec', 'Target': oprec_id}])
+            video_dict = is_live
+            video_dict['Provide'] = self.module
+            process_video(video_dict)
         else:
-            self.logger.info(f'{oprec_id}: Not found Live, after {sec}s checking')
-            self.return_and_sleep(oprec_id, self.module)
+            self.logger.info(f'{self.target_id}: Not found Live')
 
-    def actor(self, oprec_id):
-        proc = Process(target=self.check, args=(oprec_id,))
-        proc.start()
+    def run(self) -> None:
+        self.check()

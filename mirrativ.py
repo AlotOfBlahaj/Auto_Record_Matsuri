@@ -1,21 +1,19 @@
 import time
-from multiprocessing import Process
 
-from config import sec
 from daemon import VideoDaemon
-from queues import mirrativ_queue
 from tools import get_json, get_logger
+from video_process import process_video
 
 
 class Mirrativ(VideoDaemon):
 
-    def __init__(self):
-        super().__init__(mirrativ_queue)
+    def __init__(self, target_id):
+        super().__init__(target_id)
         self.logger = get_logger('Mirrativ')
         self.module = 'Mirrativ'
 
-    def get_live_info(self, userid):
-        live_info = get_json(f'https://www.mirrativ.com/api/user/profile?user_id={userid}')
+    def get_live_info(self):
+        live_info = get_json(f'https://www.mirrativ.com/api/user/profile?user_id={self.target_id}')
         nowlive = live_info['onlive']
         try:
             if nowlive:
@@ -38,15 +36,13 @@ class Mirrativ(VideoDaemon):
                      'Date': date}
         return live_dict
 
-    def check(self, userid):
-        is_live = self.get_live_info(userid)
+    def check(self):
+        is_live = self.get_live_info()
         if is_live:
-            is_live = self.get_hsl(is_live)
-            return is_live, {'Module': 'Mirrativ', 'Target': userid}
-        self.logger.info(f'{userid}: Not found Live, after {sec}s checking')
-        self.return_and_sleep(userid, self.module)
-        return None
+            video_dict = self.get_hsl(is_live)
+            video_dict['Provide'] = self.module
+            process_video(video_dict)
+        self.logger.info(f'{self.target_id}: Not found Live')
 
-    def actor(self, userid):
-        proc = Process(target=self.check, args=(userid,))
-        proc.start()
+    def run(self) -> None:
+        self.check()
