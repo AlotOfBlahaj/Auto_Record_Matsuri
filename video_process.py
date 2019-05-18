@@ -19,8 +19,6 @@ def bd_upload(file):
         else:
             command = [f"{ABSPATH}/BaiduPCS-Go/BaiduPCS-Go", "upload", "--nofix"]
             command2 = [f"{ABSPATH}/BaiduPCS-Go/BaiduPCS-Go", "share", "set"]
-            # 此处一定要注明encoding
-
         command.append(f"{ddir}/{file}")
         command.append("/")
         command2.append(file)
@@ -98,31 +96,46 @@ class AdjustFileName:
         if lens > 80:
             self.filename = self.filename[:80]
 
+    def remove_emoji(self):
+        emoji_pattern = re.compile(
+            u'(\U0001F1F2\U0001F1F4)|'  # Macau flag
+            u'([\U0001F1E6-\U0001F1FF]{2})|'  # flags
+            u'([\U0001F600-\U0001F64F])'  # emoticons
+            "+", flags=re.UNICODE)
+        self.filename = emoji_pattern.sub('', self.filename)
+
     def adjust(self):
+        self.remove_emoji()
         self.title_block()
         self.filename_length_limit()
         self.file_exist()
         return self.filename
 
 
-def process_video(data, call_back):
-    bot(f"[直播提示] {call_back['Module']}{data.get('Title')} 正在直播 链接: {data['Target']}")
+def process_video(video_dict, call_back):
+    """
+    处理直播视频，包含bot的发送，视频下载，视频上传和存入数据库
+    :param video_dict: 含有直播视频数据的dict
+    :param call_back: 用于标识传入来源
+    :return: None
+    """
+    bot(f"[直播提示] {call_back['Module']}{video_dict.get('Title')} 正在直播 链接: {video_dict['Target']}")
 
     logger = get_logger('Process Video')
     logger.info(f'{call_back["Module"]} Found A Live, starting downloader')
 
-    data['Title'] = AdjustFileName(data['Title']).adjust()
+    video_dict['Title'] = AdjustFileName(video_dict['Title']).adjust()
     try:
         if call_back['Module'] == 'Youtube':
-            downloader(r"https://www.youtube.com/watch?v=" + data['Ref'], data['Title'], proxy, '720p')
+            downloader(r"https://www.youtube.com/watch?v=" + video_dict['Ref'], video_dict['Title'], proxy, '720p')
         else:
-            downloader(data['Ref'], data['Title'], proxy)
-        link = bd_upload(f"{data['Title']}")
+            downloader(video_dict['Ref'], video_dict['Title'], proxy)
+        link = bd_upload(f"{video_dict['Title']}")
         if link:
             if enable_db:
                 db = Database('Video')
-                db.insert(data['Title'], link, data['Date'])
-            bot(f"[下载提示] {data['Title']} 已上传, 请查看页面")
+                db.insert(video_dict['Title'], link, video_dict['Date'])
+            bot(f"[下载提示] {video_dict['Title']} 已上传, 请查看页面")
     except RuntimeError:
         return None
     finally:

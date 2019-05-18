@@ -9,7 +9,7 @@ sys.path.insert(0, '..')
 
 def test_adjust_title():
     replace_list = ['|', '/', '\\']
-    title = '夏まつch|542038802'
+    title = '夏まつch|542038802|saddddddddddddddddasdaaaaaaaaaaaddddddjhjhjhj😠'
     result = AdjustFileName(title).adjust()
     print(result)
     for x in replace_list:
