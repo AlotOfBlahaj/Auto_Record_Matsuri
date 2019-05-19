@@ -3,7 +3,7 @@ import time
 from lxml.html import etree
 
 from daemon import VideoDaemon
-from tools import get_logger, get
+from tools import get_logger, get, while_warp
 from video_process import process_video
 
 
@@ -33,6 +33,7 @@ class Openrec(VideoDaemon):
             return live_dict
         return None
 
+    @while_warp
     def check(self):
         is_live = self.is_live()
         if is_live:

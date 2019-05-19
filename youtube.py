@@ -3,7 +3,7 @@ from time import sleep
 
 from config import sec, api_key
 from daemon import VideoDaemon
-from tools import get, get_json, get_logger, Database
+from tools import get, get_json, get_logger, Database, while_warp
 from video_process import process_video
 
 
@@ -59,6 +59,7 @@ class Youtube(VideoDaemon):
                 'Target': target,
                 'Date': date}
 
+    @while_warp
     def check(self):
         html = get(f'https://www.youtube.com/channel/{self.target_id}/featured')
         if '"label":"LIVE NOW"' in html:

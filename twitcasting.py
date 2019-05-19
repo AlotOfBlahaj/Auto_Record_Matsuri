@@ -1,7 +1,7 @@
 import time
 
 from daemon import VideoDaemon
-from tools import get_logger, get_json
+from tools import get_logger, get_json, while_warp
 from video_process import process_video
 
 
@@ -33,6 +33,7 @@ class Twitcasting(VideoDaemon):
                 'Target': target,
                 'Date': date}
 
+    @while_warp
     def check(self):
         live_info = self.live_info()
         if live_info.get('Is_live'):

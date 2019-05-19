@@ -1,48 +1,42 @@
 from multiprocessing import Process
-from time import sleep
 
 from bilibili import Bilibili
-from config import enable_youtube, enable_twitcasting, enable_openrec, enable_mirrativ, enable_bilibili, \
-    enable_youtube_temp, channel_id, userid, oprec_id, twitcasting_ld, bilibili_id, sec
+from config import (enable_youtube, enable_twitcasting, enable_openrec, enable_mirrativ, enable_bilibili,
+                    enable_youtube_temp, channel_id, userid, oprec_id, twitcasting_ld, bilibili_id)
 from daemon import VideoUpload
 from mirrativ import Mirrativ
 from openrec import Openrec
-from tools import get_logger
 from twitcasting import Twitcasting
 from youtube import Youtube, start_temp_daemon
 
 
 class Event:
     def __init__(self):
-        self.logger = get_logger('Event')
-        self.events_no_need_while = []
-        self.events_need_while = []
+        self.events_multi = []
+        self.events_normal = []
         if enable_youtube:
-            self.events_need_while.append(self.start_youtube)
+            self.events_normal.append(self.start_youtube)
         if enable_youtube_temp:
-            self.events_no_need_while.append(Process(target=self.start_youtube_temp))
+            self.events_multi.append(Process(target=self.start_youtube_temp))
         if enable_twitcasting:
-            self.events_need_while.append(self.start_twitcasting)
+            self.events_normal.append(self.start_twitcasting)
         if enable_openrec:
-            self.events_need_while.append(self.start_openrec)
+            self.events_normal.append(self.start_openrec)
         if enable_mirrativ:
-            self.events_need_while.append(self.start_mirrativ)
+            self.events_normal.append(self.start_mirrativ)
         if enable_bilibili:
-            self.events_no_need_while.append(Process(target=self.start_bilibili))
+            self.events_multi.append(Process(target=self.start_bilibili))
 
     def start(self):
-        self.start_no_need_while()
-        while True:
-            self.start_need_while()
-            self.logger.info(f'Next Check: {sec}')
-            sleep(sec)
+        self.start_multi_task()
+        self.start_normal_task()
 
-    def start_no_need_while(self):
-        for proc in self.events_no_need_while:
+    def start_multi_task(self):
+        for proc in self.events_multi:
             proc.start()
 
-    def start_need_while(self):
-        for proc in self.events_need_while:
+    def start_normal_task(self):
+        for proc in self.events_normal:
             proc()
 
     @staticmethod
