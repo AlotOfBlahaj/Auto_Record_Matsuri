@@ -68,8 +68,6 @@ class Youtube(VideoDaemon):
             video_dict = self.get_videoid_by_channel_id(self.target_id)
             video_dict['Provide'] = self.module
             process_video(video_dict)
-            self.logger.error('Getting Live Failed, waiting 5s to retry')
-            # await process_video(get_live_info, 'Youtube')
         else:
             if 'Upcoming live streams' in html:
                 self.logger.info(f'{self.target_id}: Found A Live Upcoming')
