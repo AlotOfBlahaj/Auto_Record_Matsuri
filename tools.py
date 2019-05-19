@@ -1,15 +1,16 @@
 import json
 import logging
+from functools import wraps
 from os import mkdir
 from os.path import abspath, dirname
-from time import strftime, localtime, time
+from time import strftime, localtime, time, sleep
 
 import pymongo
 import requests
 from bson import ObjectId
 from retrying import retry
 
-from config import enable_bot, host, group_id, proxy, enable_proxy, sec_error
+from config import enable_bot, host, group_id, proxy, enable_proxy, sec_error, sec
 
 ABSPATH = dirname(abspath(__file__))
 fake_headers = {
@@ -116,3 +117,13 @@ class Database:
                  "Date": _date}
         result = self.db.insert_one(vdict)
         self.logger.info(result)
+
+
+def while_warp(func):
+    @wraps(func)
+    def warp(*args, **kwargs):
+        while True:
+            func(*args, *kwargs)
+            sleep(sec)
+
+    return warp

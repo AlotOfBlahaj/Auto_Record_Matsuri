@@ -1,7 +1,7 @@
 import time
 
 from daemon import VideoDaemon
-from tools import get_json, get_logger
+from tools import get_json, get_logger, while_warp
 from video_process import process_video
 
 
@@ -36,6 +36,7 @@ class Mirrativ(VideoDaemon):
                      'Date': date}
         return live_dict
 
+    @while_warp
     def check(self):
         is_live = self.get_live_info()
         if is_live:
