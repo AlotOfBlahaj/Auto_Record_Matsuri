@@ -135,6 +135,8 @@ def process_video(video_dict):
     video_dict['Title'] = AdjustFileName(video_dict['Title']).adjust()
     if video_dict["Provide"] == 'Youtube':
         downloader(r"https://www.youtube.com/watch?v=" + video_dict['Ref'], video_dict['Title'], proxy, '720p')
+        # After youtube streaming end, the page still display 'live now' so upload in the monitor process
+        upload_video(video_dict)
     else:
         downloader(video_dict['Ref'], video_dict['Title'], proxy)
-    upload_queue.put_nowait(video_dict)
+        upload_queue.put_nowait(video_dict)
