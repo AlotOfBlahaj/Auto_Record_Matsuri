@@ -35,7 +35,7 @@ def test_process_video():
 
 def test_youtube():
     y = Youtube('UCcnoKv531otgPrd3NcR0mag')
-    y.run()
+    y.check()
 
 
 def test_youtube_temp():

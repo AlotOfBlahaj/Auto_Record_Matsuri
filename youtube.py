@@ -1,5 +1,6 @@
+import json
 import re
-from time import sleep
+from time import sleep, strftime, localtime, time
 
 from config import sec, api_key
 from daemon import VideoDaemon
@@ -41,6 +42,30 @@ class Youtube(VideoDaemon):
                 'Target': target,
                 'Thumbnails': thumbnails}
 
+    def get_video_info_by_html(self):
+        """
+        The method is using yfconfig to get information of video including title, video_id, data and thumbnail
+        :rtype: dict
+        """
+        video_page = get(f'https://www.youtube.com/channel/{self.target_id}/live')
+        try:
+            ytplayer_config = json.loads(re.search(r'ytplayer.config\s*=\s*([^\n]+?});', video_page).group(1))
+            player_response = json.loads(ytplayer_config['args']['player_response'])
+            video_details = player_response['videoDetails']
+            title = video_details['title']
+            vid = video_details['videoId']
+            target = f"https://www.youtube.com/watch?v={vid}"
+            thumbnails = video_details['thumbnail']['thumbnails'][-1]['url']
+            # date = player_response['playabilityStatus']['liveStreamability']['liveStreamabilityRenderer']['offlineSlate'] \
+            #     ['liveStreamOfflineSlateRenderer']['scheduledStartTime']
+            return {'Title': title,
+                    'Ref': vid,
+                    'Date': strftime("%Y-%m-%d", localtime(time())),
+                    'Target': target,
+                    'Thumbnails': thumbnails}
+        except KeyError:
+            self.logger.exception()
+
     def getlive_title(self, vid):
         live_info = get_json(rf'https://www.googleapis.com/youtube/v3/videos?id={vid}&key={self.api_key}&'
                              r'part=liveStreamingDetails,snippet')
@@ -61,18 +86,23 @@ class Youtube(VideoDaemon):
 
     @while_warp
     def check(self):
-        html = get(f'https://www.youtube.com/channel/{self.target_id}/featured')
-        if '"label":"LIVE NOW"' in html:
-            # vid = self.get_videoid_by_channel_id()
-            # get_live_info = self.getlive_vid(vid)
-            video_dict = self.get_videoid_by_channel_id(self.target_id)
-            video_dict['Provide'] = self.module
-            process_video(video_dict)
-        else:
-            if 'Upcoming live streams' in html:
-                self.logger.info(f'{self.target_id}: Found A Live Upcoming')
+        try:
+            html = get(f'https://www.youtube.com/channel/{self.target_id}/featured')
+            if '"label":"LIVE NOW"' in html:
+                # vid = self.get_videoid_by_channel_id()
+                # get_live_info = self.getlive_vid(vid)
+                video_dict = self.get_video_info_by_html()
+                if not video_dict:
+                    self.get_videoid_by_channel_id(self.target_id)
+                video_dict['Provide'] = self.module
+                process_video(video_dict)
             else:
-                self.logger.info(f'{self.target_id}: Not found Live')
+                if 'Upcoming live streams' in html:
+                    self.logger.info(f'{self.target_id}: Found A Live Upcoming')
+                else:
+                    self.logger.info(f'{self.target_id}: Not found Live')
+        except Exception:
+            self.logger.exception()
 
     def run(self) -> None:
         self.check()
