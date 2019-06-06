@@ -40,5 +40,11 @@ enable_bot = 0
 host = '127.0.0.1:5700'
 # 要发送消息的QQ群号，暂时不支持多群
 group_id = ['']
-# 是否自动上传百度云
-enable_upload = 1
+# 选择上传方式 可填入 'bd', 's3'
+upload_by = 's3'
+# S3服务器
+s3_server = 'http://s3.us-west-1.wasabisys.com/'
+# S3 access_key
+s3_access_key = ''
+# S3 secret_key
+s3_secret_key = ''

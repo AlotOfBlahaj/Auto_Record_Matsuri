@@ -6,10 +6,14 @@ from daemon import VideoUpload
 from mirrativ import Mirrativ
 from openrec import Openrec
 from twitcasting import Twitcasting
+from upload import BDUpload, upload_video
 from video_process import AdjustFileName, process_video
 from youtube import Youtube, start_temp_daemon
 
 sys.path.insert(0, '..')
+
+TEST_ITME = f'D:\\test.txt'
+TEST_ITME_NAME = 'test.txt'
 
 
 def test_adjust_title():
@@ -57,6 +61,17 @@ def test_openrec():
     o = Openrec('natsuiromatsuri')
     o.start()
     o.join()
+
+
+def test_bd_upload():
+    b = BDUpload()
+    b.upload_item(TEST_ITME, TEST_ITME_NAME)
+
+
+def test_upload():
+    upload_video({'Title': 'test.txt',
+                  'Date': 'test'})
+
 
 if __name__ == '__main__':
     pytest.main('test.py')
