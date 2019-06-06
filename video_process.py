@@ -1,46 +1,11 @@
 import re
 import subprocess
-from os import name
 from os.path import isfile
 
-from config import enable_upload, ddir, enable_proxy, proxy, enable_db
+from config import ddir, enable_proxy, proxy
 from queues import upload_queue
-from tools import ABSPATH
-from tools import get_logger, bot, Database
-
-
-def bd_upload(file):
-    logger = get_logger('bd_upload')
-    if enable_upload:
-        if 'nt' in name:
-            command = [f"{ABSPATH}\\BaiduPCS-Go\\BaiduPCS-Go.exe", "upload", "--nofix"]
-            command2 = [f'{ABSPATH}\\BaiduPCS-GO\\BaiduPCS-Go.exe', "share", "set"]
-        else:
-            command = [f"{ABSPATH}/BaiduPCS-Go/BaiduPCS-Go", "upload", "--nofix"]
-            command2 = [f"{ABSPATH}/BaiduPCS-Go/BaiduPCS-Go", "share", "set"]
-        command.append(f"{ddir}/{file}")
-        command.append("/")
-        command2.append(file)
-        subprocess.run(command)
-        s2 = subprocess.run(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            encoding='utf-8', universal_newlines=True)
-        share_info = s2.stdout
-        if 'https' in share_info:
-            share_info = share_info.replace('\n', '')
-            logger.info(f'{file}: Share successful {share_info}')
-        else:
-            logger.error('Share failed')
-            raise RuntimeError(f'{file} share failed')
-        reg = r'https://pan.baidu.com/s/([A-Za-z0-9_-]{23})'
-        linkre = re.compile(reg)
-        link = re.search(linkre, share_info)
-        try:
-            link = 'https://pan.baidu.com/s/' + link.group(1)
-            return link
-        except AttributeError:
-            logger.exception('get share link error')
-            raise RuntimeError('get share link error')
-    return None
+from tools import get_logger, bot
+from upload import upload_video
 
 
 def downloader(link, title, dl_proxy, quality='best'):
@@ -109,17 +74,6 @@ class AdjustFileName:
         self.filename_length_limit()
         self.file_exist()
         return self.filename
-
-
-def upload_video(video_dict):
-    share_url = bd_upload(video_dict['Title'])
-    if share_url:
-        if enable_db:
-            db = Database('Video')
-            db.insert(video_dict['Title'], share_url, video_dict['Date'])
-        bot(f"[下载提示] {video_dict['Title']} 已上传, 请查看页面")
-    else:
-        raise RuntimeError(f'Upload {video_dict["Title"]} failed')
 
 
 def process_video(video_dict):

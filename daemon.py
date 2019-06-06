@@ -3,7 +3,7 @@ from multiprocessing import Process
 
 from queues import upload_queue
 from tools import get_logger
-from video_process import upload_video
+from upload import upload_video
 
 
 class VideoUpload(Process):
