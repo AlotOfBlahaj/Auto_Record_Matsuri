@@ -27,6 +27,7 @@ pluggy==0.12.0
 py==1.8.0
 pycryptodome==3.8.2
 pyee==6.0.0
+pymongo==3.8.0
 pyparsing==2.4.0
 pyppeteer==0.0.25
 pyquery==1.4.0
