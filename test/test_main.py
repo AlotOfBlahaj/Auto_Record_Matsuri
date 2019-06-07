@@ -6,14 +6,14 @@ from daemon import VideoUpload
 from mirrativ import Mirrativ
 from openrec import Openrec
 from twitcasting import Twitcasting
-from upload import BDUpload, upload_video
+from upload import BDUpload, upload_video, S3Upload
 from video_process import AdjustFileName, process_video
 from youtube import Youtube, start_temp_daemon
 
 sys.path.insert(0, '..')
 
-TEST_ITME = f'D:\\test.txt'
-TEST_ITME_NAME = 'test.txt'
+TEST_ITME = f'D:\\ubuntu-18.04.2-desktop-amd64.iso'
+TEST_ITME_NAME = 'ubuntu-18.04.2-desktop-amd64.iso'
 
 
 def test_adjust_title():
@@ -66,6 +66,11 @@ def test_openrec():
 def test_bd_upload():
     b = BDUpload()
     b.upload_item(TEST_ITME, TEST_ITME_NAME)
+
+
+def test_s3_upload():
+    s = S3Upload()
+    s.upload_item(TEST_ITME, TEST_ITME_NAME)
 
 
 def test_upload():
