@@ -1,9 +1,10 @@
 import re
 import subprocess
+from urllib.parse import quote
 from abc import ABCMeta, abstractmethod
 from os import name
 
-import boto3
+from minio import Minio
 from botocore.exceptions import ClientError
 
 from config import ddir, enable_db, s3_access_key, s3_secret_key, upload_by, s3_server
@@ -19,19 +20,13 @@ class Upload(metaclass=ABCMeta):
 class S3Upload(Upload):
     def __init__(self):
         self.logger = get_logger('S3Upload')
-        self.s3_client = boto3.client(service_name='s3',
-                                      aws_access_key_id=s3_access_key,
-                                      aws_secret_access_key=s3_secret_key,
-                                      endpoint_url=s3_server)
+        self.minio = Minio(s3_server,
+                           access_key=s3_access_key,
+                           secret_key=s3_secret_key,
+                           secure=True)
 
     def upload_item(self, item_path, item_name):
-        try:
-            self.s3_client.upload_file(item_path, 'matsuri', item_name)
-        except ClientError as e:
-            self.logger.error(e)
-            return False
-        self.logger.info(f'Upload {item_name} succeed')
-        return True
+        self.minio.fput_object('matsuri', item_name, item_path)
 
 
 class BDUpload(Upload):
@@ -88,7 +83,7 @@ def upload_video(video_dict):
         if enable_db:
             db = Database('Video')
             db.insert(video_dict['Title'],
-                      f"gets3/{video_dict['Title']}",
+                      f"gets3/{quote(video_dict['Title'])}",
                       video_dict['Date'])
     else:
         raise RuntimeError(f'Upload {video_dict["Title"]} failed')
