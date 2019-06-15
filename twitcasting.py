@@ -35,13 +35,16 @@ class Twitcasting(VideoDaemon):
 
     @while_warp
     def check(self):
-        live_info = self.live_info()
-        if live_info.get('Is_live'):
-            video_dict = self.get_hsl(live_info)
-            video_dict['Provide'] = self.module
-            process_video(video_dict)
-        else:
-            self.logger.info(f'{self.target_id}: Not found Live')
+        try:
+            live_info = self.live_info()
+            if live_info.get('Is_live'):
+                video_dict = self.get_hsl(live_info)
+                video_dict['Provide'] = self.module
+                process_video(video_dict)
+            else:
+                self.logger.info(f'{self.target_id}: Not found Live')
+        except Exception:
+            self.logger.exception('Check Failed')
 
     def run(self) -> None:
         self.check()
