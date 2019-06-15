@@ -52,6 +52,7 @@ class Youtube(VideoDaemon):
             ytplayer_config = json.loads(re.search(r'ytplayer.config\s*=\s*([^\n]+?});', video_page).group(1))
             player_response = json.loads(ytplayer_config['args']['player_response'])
             video_details = player_response['videoDetails']
+            assert video_details['isLive']
             title = video_details['title']
             vid = video_details['videoId']
             target = f"https://www.youtube.com/watch?v={vid}"
@@ -64,7 +65,8 @@ class Youtube(VideoDaemon):
                     'Target': target,
                     'Thumbnails': thumbnails}
         except KeyError:
-            self.logger.exception()
+            self.logger.exception('Get keys error')
+            return False
 
     def getlive_title(self, vid):
         live_info = get_json(rf'https://www.googleapis.com/youtube/v3/videos?id={vid}&key={self.api_key}&'
@@ -91,9 +93,16 @@ class Youtube(VideoDaemon):
             if '"label":"LIVE NOW"' in html:
                 # vid = self.get_videoid_by_channel_id()
                 # get_live_info = self.getlive_vid(vid)
-                video_dict = self.get_video_info_by_html()
-                if not video_dict:
-                    self.get_videoid_by_channel_id(self.target_id)
+                retry_num = 0
+                while retry_num < 3:
+                    video_dict = self.get_video_info_by_html()
+                    if video_dict:
+                        break
+                    else:
+                        sleep(0.5)
+                        retry_num += 1
+                else:
+                    video_dict = self.get_videoid_by_channel_id(self.target_id)
                 video_dict['Provide'] = self.module
                 process_video(video_dict)
             else:
@@ -102,7 +111,7 @@ class Youtube(VideoDaemon):
                 else:
                     self.logger.info(f'{self.target_id}: Not found Live')
         except Exception:
-            self.logger.exception()
+            self.logger.exception('Check Failed')
 
     def run(self) -> None:
         self.check()
