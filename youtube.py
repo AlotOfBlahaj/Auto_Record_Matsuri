@@ -17,6 +17,7 @@ class Youtube(VideoDaemon):
         # 品质设置
         self.database = Database('Queues')
         self.logger = get_logger('Youtube')
+        self.vid = None
 
     # 关于SearchAPI的文档 https://developers.google.com/youtube/v3/docs/search/list
     def get_videoid_by_channel_id(self, channel_id):
@@ -104,7 +105,13 @@ class Youtube(VideoDaemon):
                 else:
                     video_dict = self.get_videoid_by_channel_id(self.target_id)
                 video_dict['Provide'] = self.module
-                process_video(video_dict)
+                # 确定视频不重复
+                if self.vid != video_dict['Ref']:
+                    self.vid = video_dict['Ref']
+                    process_video(video_dict)
+                else:
+                    self.logger.warning('Found A Repeated Video. Drop it')
+                    sleep(1)
             else:
                 if 'Upcoming live streams' in html:
                     self.logger.info(f'{self.target_id}: Found A Live Upcoming')
