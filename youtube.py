@@ -148,6 +148,7 @@ class YoutubeTemp(Youtube):
         html = get("https://www.youtube.com/watch?v=" f"{self.vid}")
         if r'"isLive\":true' in html:
             video_dict = self.getlive_title(self.vid)
+            video_dict['Provide'] = self.module
             process_video(video_dict)
             self.db.delete(self.vinfo)
         else:
