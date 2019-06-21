@@ -1,12 +1,15 @@
 from multiprocessing import Process
+from os.path import isdir
+from os import mkdir
 
 from bilibili import Bilibili
 from config import (enable_youtube, enable_twitcasting, enable_openrec, enable_mirrativ, enable_bilibili,
-                    enable_youtube_temp, channel_id, userid, oprec_id, twitcasting_ld, bilibili_id)
+                    enable_youtube_temp, channel_id, userid, oprec_id, twitcasting_ld, bilibili_id, ddir)
 from daemon import VideoUpload
 from mirrativ import Mirrativ
 from openrec import Openrec
 from twitcasting import Twitcasting
+from tools import get_logger
 from youtube import Youtube, start_temp_daemon
 
 
@@ -74,7 +77,18 @@ class Event:
             b.actor(b_id)
 
 
+def check_ddir_is_exist():
+    if not isdir(ddir):
+        try:
+            mkdir(ddir)
+        except FileNotFoundError:
+            logger = get_logger('Main')
+            logger.exception('下载目录（ddir）配置错误，请选择可用的目录')
+            exit(-1)
+
+
 if __name__ == '__main__':
+    check_ddir_is_exist()
     uploader = VideoUpload()
     uploader.start()
     e = Event()
