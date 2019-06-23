@@ -86,7 +86,7 @@ def bot(message):
             _msg = {
                 'group_id': int(_group_id),
                 'message': message,
-                'auto_escape': True
+                'auto_escape': False
             }
             _msg = json.dumps(_msg)
             try:
