@@ -81,7 +81,7 @@ def process_video(video_dict):
     :param video_dict: 含有直播视频数据的dict
     :return: None
     """
-    bot(f"[直播提示] {video_dict['Provide']}{video_dict.get('Title')} 正在直播 链接: {video_dict['Target']}")
+    bot(f"[直播提示] {video_dict['Provide']}{video_dict.get('Title')} 正在直播 链接: {video_dict['Target']} [CQ:at,qq=all]")
 
     logger = get_logger('Process Video')
     logger.info(f'{video_dict["Provide"]} Found A Live, starting downloader')
