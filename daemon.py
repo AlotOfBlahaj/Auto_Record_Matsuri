@@ -14,7 +14,10 @@ class VideoUpload(Process):
         self.video_info = None
 
     def run(self) -> None:
-        self.start_daemon()
+        try:
+            self.start_daemon()
+        except KeyboardInterrupt:
+            exit(0)
 
     def start_daemon(self):
         self.logger.info('Waiting for tasks')
@@ -29,9 +32,11 @@ class VideoDaemon(Process, metaclass=ABCMeta):
         super().__init__()
         self.target_id = target_id
 
-    @abstractmethod
     def run(self) -> None:
-        pass
+        try:
+            self.check()
+        except KeyboardInterrupt:
+            exit(0)
 
     @abstractmethod
     def check(self):

@@ -42,6 +42,3 @@ class Openrec(VideoDaemon):
             process_video(video_dict)
         else:
             self.logger.info(f'{self.target_id}: Not found Live')
-
-    def run(self) -> None:
-        self.check()

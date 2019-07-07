@@ -1,11 +1,10 @@
 import re
 import subprocess
-from urllib.parse import quote
 from abc import ABCMeta, abstractmethod
 from os import name
+from urllib.parse import quote
 
 from minio import Minio
-from botocore.exceptions import ClientError
 
 from config import ddir, enable_db, s3_access_key, s3_secret_key, upload_by, s3_server
 from tools import get_logger, ABSPATH, Database, bot
