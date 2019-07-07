@@ -4,7 +4,7 @@ from os import mkdir
 
 from bilibili import Bilibili
 from config import (enable_youtube, enable_twitcasting, enable_openrec, enable_mirrativ, enable_bilibili,
-                    enable_youtube_temp, channel_id, userid, oprec_id, twitcasting_ld, bilibili_id, ddir)
+                    enable_youtube_temp, channel_id, userid, oprec_id, twitcasting_ld, bilibili_id, ddir, enable_upload)
 from daemon import VideoUpload
 from mirrativ import Mirrativ
 from openrec import Openrec
@@ -89,7 +89,8 @@ def check_ddir_is_exist():
 
 if __name__ == '__main__':
     check_ddir_is_exist()
-    uploader = VideoUpload()
-    uploader.start()
+    if enable_upload:
+        uploader = VideoUpload()
+        uploader.start()
     e = Event()
     e.start()

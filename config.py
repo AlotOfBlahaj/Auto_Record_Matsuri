@@ -40,6 +40,8 @@ enable_bot = 0
 host = '127.0.0.1:5700'
 # 要发送消息的QQ群号，暂时不支持多群
 group_id = ['']
+# 是否开启上传 0/1
+enable_upload = 0
 # 选择上传方式 可填入 'bd', 's3'
 upload_by = 's3'
 # S3服务器
