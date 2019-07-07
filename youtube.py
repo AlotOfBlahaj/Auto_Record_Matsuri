@@ -17,14 +17,14 @@ class Youtube(VideoDaemon):
         # 品质设置
         self.database = Database('Queues')
         self.logger = get_logger('Youtube')
-        self.vid = None
 
     # 关于SearchAPI的文档 https://developers.google.com/youtube/v3/docs/search/list
-    def get_videoid_by_channel_id(self, channel_id):
+    def get_videoid_by_channel_id(self, channel_id: str):
+        # This method has been given up
         channel_info = get_json(rf'https://www.googleapis.com/youtube/v3/search?part=snippet&'
                                 rf'channelId={channel_id}&eventType=live&maxResults=1&type=video&'
                                 rf'key={self.api_key}')
-        # 判断获取的数据是否正确
+        # assert json data
         try:
             item = channel_info['items'][0]
         except KeyError:
@@ -53,13 +53,12 @@ class Youtube(VideoDaemon):
             ytplayer_config = json.loads(re.search(r'ytplayer.config\s*=\s*([^\n]+?});', video_page).group(1))
             player_response = json.loads(ytplayer_config['args']['player_response'])
             video_details = player_response['videoDetails']
+            # assert to verity live status
             assert video_details['isLive']
             title = video_details['title']
             vid = video_details['videoId']
             target = f"https://www.youtube.com/watch?v={vid}"
             thumbnails = video_details['thumbnail']['thumbnails'][-1]['url']
-            # date = player_response['playabilityStatus']['liveStreamability']['liveStreamabilityRenderer']['offlineSlate'] \
-            #     ['liveStreamOfflineSlateRenderer']['scheduledStartTime']
             return {'Title': title,
                     'Ref': vid,
                     'Date': strftime("%Y-%m-%d", localtime(time())),
@@ -92,26 +91,10 @@ class Youtube(VideoDaemon):
         try:
             html = get(f'https://www.youtube.com/channel/{self.target_id}/featured')
             if '"label":"LIVE NOW"' in html:
-                # vid = self.get_videoid_by_channel_id()
-                # get_live_info = self.getlive_vid(vid)
-                retry_num = 0
-                while retry_num < 3:
-                    video_dict = self.get_video_info_by_html()
-                    if video_dict:
-                        break
-                    else:
-                        sleep(0.5)
-                        retry_num += 1
-                else:
-                    video_dict = self.get_videoid_by_channel_id(self.target_id)
-                video_dict['Provide'] = self.module
-                # 确定视频不重复
-                if self.vid != video_dict['Ref']:
-                    self.vid = video_dict['Ref']
+                video_dict = self.get_video_info_by_html()
+                if video_dict:
+                    video_dict['Provide'] = self.module
                     process_video(video_dict)
-                else:
-                    self.logger.warning('Found A Repeated Video. Drop it')
-                    sleep(1)
             else:
                 if 'Upcoming live streams' in html:
                     self.logger.info(f'{self.target_id}: Found A Live Upcoming')
@@ -119,9 +102,6 @@ class Youtube(VideoDaemon):
                     self.logger.info(f'{self.target_id}: Not found Live')
         except Exception:
             self.logger.exception('Check Failed')
-
-    def run(self) -> None:
-        self.check()
 
 
 class YoutubeTemp(Youtube):
