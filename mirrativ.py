@@ -44,6 +44,3 @@ class Mirrativ(VideoDaemon):
             video_dict['Provide'] = self.module
             process_video(video_dict)
         self.logger.info(f'{self.target_id}: Not found Live')
-
-    def run(self) -> None:
-        self.check()

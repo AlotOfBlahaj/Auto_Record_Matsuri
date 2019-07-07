@@ -1,6 +1,6 @@
 from multiprocessing import Process
-from os.path import isdir
 from os import mkdir
+from os.path import isdir
 
 from bilibili import Bilibili
 from config import (enable_youtube, enable_twitcasting, enable_openrec, enable_mirrativ, enable_bilibili,
@@ -8,73 +8,50 @@ from config import (enable_youtube, enable_twitcasting, enable_openrec, enable_m
 from daemon import VideoUpload
 from mirrativ import Mirrativ
 from openrec import Openrec
-from twitcasting import Twitcasting
 from tools import get_logger
+from twitcasting import Twitcasting
 from youtube import Youtube, start_temp_daemon
 
 
 class Event:
     def __init__(self):
         self.events_multi = []
-        self.events_normal = []
-        if enable_youtube:
-            self.events_normal.append(self.start_youtube)
-        if enable_youtube_temp:
-            self.events_multi.append(Process(target=self.start_youtube_temp))
-        if enable_twitcasting:
-            self.events_normal.append(self.start_twitcasting)
-        if enable_openrec:
-            self.events_normal.append(self.start_openrec)
-        if enable_mirrativ:
-            self.events_normal.append(self.start_mirrativ)
-        if enable_bilibili:
-            self.events_multi.append(Process(target=self.start_bilibili))
+        self.gen_process()
 
     def start(self):
         self.start_multi_task()
-        self.start_normal_task()
+        if enable_youtube_temp:
+            temp = Process(target=start_temp_daemon)
+            temp.run()
+        for event in self.events_multi:
+            event.join()
+
+    def gen_process(self):
+        if enable_youtube:
+            for target_id in channel_id:
+                y = Youtube(target_id)
+                self.events_multi.append(y)
+        if enable_twitcasting:
+            for target_id in twitcasting_ld:
+                t = Twitcasting(target_id)
+                self.events_multi.append(t)
+        if enable_openrec:
+            for target_id in oprec_id:
+                o = Openrec(target_id)
+                self.events_multi.append(o)
+        if enable_mirrativ:
+            for target_id in userid:
+                m = Mirrativ(target_id)
+                self.events_multi.append(m)
+        if enable_bilibili:
+            for target_id in bilibili_id:
+                b = Bilibili(target_id)
+                self.events_multi.append(b)
 
     def start_multi_task(self):
         for proc in self.events_multi:
+            proc.daemon = True
             proc.start()
-
-    def start_normal_task(self):
-        for proc in self.events_normal:
-            proc()
-
-    @staticmethod
-    def start_youtube():
-        for target_id in channel_id:
-            y = Youtube(target_id)
-            y.start()
-
-    @staticmethod
-    def start_youtube_temp():
-        start_temp_daemon()
-
-    @staticmethod
-    def start_mirrativ():
-        for target_id in userid:
-            m = Mirrativ(target_id)
-            m.start()
-
-    @staticmethod
-    def start_openrec():
-        for target_id in oprec_id:
-            o = Openrec(target_id)
-            o.start()
-
-    @staticmethod
-    def start_twitcasting():
-        for target_id in twitcasting_ld:
-            t = Twitcasting(target_id)
-            t.start()
-
-    @staticmethod
-    def start_bilibili():
-        for b_id in bilibili_id:
-            b = Bilibili()
-            b.actor(b_id)
 
 
 def check_ddir_is_exist():

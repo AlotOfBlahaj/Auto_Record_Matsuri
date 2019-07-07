@@ -145,6 +145,7 @@ def start_temp_daemon():
         for target_url in db.select():
             p = YoutubeTemp(target_url)
             event.append(p)
+            p.daemon = True
             p.start()
         is_running = True
         while is_running:

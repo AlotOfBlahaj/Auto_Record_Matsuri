@@ -45,6 +45,3 @@ class Twitcasting(VideoDaemon):
                 self.logger.info(f'{self.target_id}: Not found Live')
         except Exception:
             self.logger.exception('Check Failed')
-
-    def run(self) -> None:
-        self.check()
