@@ -50,3 +50,5 @@ s3_server = 'http://s3.us-west-1.wasabisys.com/'
 s3_access_key = ''
 # S3 secret_key
 s3_secret_key = ''
+# Youtube画质设定（其他平台均为最高画质
+youtube_quality = 'best'  # best为最高画质，可选：720p, best
