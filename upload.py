@@ -5,6 +5,7 @@ from os import name
 from urllib.parse import quote
 
 from minio import Minio
+from retrying import retry
 
 from config import ddir, enable_db, s3_access_key, s3_secret_key, upload_by, s3_server
 from tools import get_logger, ABSPATH, Database, bot
@@ -41,6 +42,7 @@ class BDUpload(Upload):
         command.append("/")
         subprocess.run(command)
 
+    @retry(stop_max_attempt_number=3)
     def share_item(self, item_name: str) -> str:
         if 'nt' in name:
             command = [f'{ABSPATH}\\BaiduPCS-GO\\BaiduPCS-Go.exe', "share", "set"]
