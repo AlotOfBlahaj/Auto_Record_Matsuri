@@ -3,7 +3,7 @@ import subprocess
 from os.path import isfile
 from time import time
 
-from config import ddir, enable_proxy, proxy
+from config import ddir, enable_proxy, proxy, youtube_quality
 from queues import upload_queue
 from tools import get_logger, bot
 
@@ -82,7 +82,7 @@ def process_video(video_dict):
     logger.info(f'{video_dict["Provide"]} Found A Live, starting downloader')
     video_dict['Title'] = AdjustFileName(video_dict['Title']).adjust()
     if video_dict["Provide"] == 'Youtube':
-        downloader(r"https://www.youtube.com/watch?v=" + video_dict['Ref'], video_dict['Title'], proxy, '720p')
+        downloader(r"https://www.youtube.com/watch?v=" + video_dict['Ref'], video_dict['Title'], proxy, youtube_quality)
     else:
         downloader(video_dict['Ref'], video_dict['Title'], proxy)
     upload_queue.put_nowait(video_dict)
