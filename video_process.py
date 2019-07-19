@@ -1,6 +1,7 @@
 import re
 import subprocess
 from os.path import isfile
+from time import time
 
 from config import ddir, enable_proxy, proxy
 from queues import upload_queue
@@ -44,13 +45,7 @@ class AdjustFileName:
     def file_exist(self):
         paths = f'{ddir}/{self.filename}.ts'
         if isfile(paths):
-            n = 0
-            while True:
-                new_filename = self.filename + f'_{n}.ts'
-                if not isfile(f'{ddir}/{new_filename}'):
-                    self.filename = new_filename
-                    break
-                n += 1
+            self.filename = self.filename + f'_{time()}.ts'
         else:
             self.filename = self.filename + '.ts'
 
