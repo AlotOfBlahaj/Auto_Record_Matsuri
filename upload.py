@@ -1,10 +1,10 @@
-import re
 import subprocess
-from abc import ABCMeta, abstractmethod
-from os import name
 from urllib.parse import quote
 
+import re
+from abc import ABCMeta, abstractmethod
 from minio import Minio
+from os import name
 from retrying import retry
 
 from config import ddir, enable_db, s3_access_key, s3_secret_key, upload_by, s3_server
