@@ -4,8 +4,7 @@ from os.path import isdir
 
 from bilibili import Bilibili
 from config import (enable_youtube, enable_twitcasting, enable_openrec, enable_mirrativ, enable_bilibili,
-                    enable_youtube_temp, channel_id, userid, oprec_id, twitcasting_ld, bilibili_id, ddir, enable_upload)
-from daemon import VideoUpload
+                    enable_youtube_temp, channel_id, userid, oprec_id, twitcasting_ld, bilibili_id, ddir)
 from mirrativ import Mirrativ
 from openrec import Openrec
 from tools import get_logger
@@ -50,7 +49,6 @@ class Event:
 
     def start_multi_task(self):
         for proc in self.events_multi:
-            proc.daemon = True
             proc.start()
 
 
@@ -66,8 +64,5 @@ def check_ddir_is_exist():
 
 if __name__ == '__main__':
     check_ddir_is_exist()
-    if enable_upload:
-        uploader = VideoUpload()
-        uploader.start()
     e = Event()
     e.start()

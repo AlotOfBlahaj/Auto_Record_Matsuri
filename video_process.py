@@ -3,8 +3,8 @@ import subprocess
 from os.path import isfile
 from time import time
 
-from config import ddir, enable_proxy, proxy, youtube_quality
-from queues import upload_queue
+from config import ddir, enable_proxy, proxy, youtube_quality, enable_upload
+from daemon import VideoUpload
 from tools import get_logger, bot
 
 
@@ -85,4 +85,6 @@ def process_video(video_dict):
         downloader(r"https://www.youtube.com/watch?v=" + video_dict['Ref'], video_dict['Title'], proxy, youtube_quality)
     else:
         downloader(video_dict['Ref'], video_dict['Title'], proxy)
-    upload_queue.put_nowait(video_dict)
+    if enable_upload:
+        v = VideoUpload(video_dict)
+        v.start()
