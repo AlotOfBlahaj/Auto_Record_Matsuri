@@ -41,7 +41,8 @@ class Youtube(VideoDaemon):
                 'Ref': vid,
                 'Date': date,
                 'Target': target,
-                'Thumbnails': thumbnails}
+                'Thumbnails': thumbnails,
+                'User': self.target_id}
 
     def get_video_info_by_html(self):
         """
@@ -63,7 +64,8 @@ class Youtube(VideoDaemon):
                     'Ref': vid,
                     'Date': strftime("%Y-%m-%d", localtime(time())),
                     'Target': target,
-                    'Thumbnails': thumbnails}
+                    'Thumbnails': thumbnails,
+                    'User': self.target_id}
         except KeyError:
             self.logger.exception('Get keys error')
             return False
@@ -84,7 +86,8 @@ class Youtube(VideoDaemon):
         return {'Title': title,
                 'Ref': vid,
                 'Target': target,
-                'Date': date}
+                'Date': date,
+                'User': self.target_id}
 
     @while_warp
     def check(self):

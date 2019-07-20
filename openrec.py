@@ -29,7 +29,8 @@ class Openrec(VideoDaemon):
             live_dict = {'Title': title,
                          'Ref': ref,
                          'Target': target,
-                         'Date': date}
+                         'Date': date,
+                         'User': self.target_id}
             return live_dict
         return None
 

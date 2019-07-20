@@ -31,7 +31,8 @@ class Twitcasting(VideoDaemon):
         return {'Title': title,
                 'Ref': ref,
                 'Target': target,
-                'Date': date}
+                'Date': date,
+                'User': self.target_id}
 
     @while_warp
     def check(self):

@@ -9,6 +9,7 @@ from retrying import retry
 
 from config import ddir, enable_db, s3_access_key, s3_secret_key, upload_by, s3_server
 from tools import get_logger, ABSPATH, Database, bot
+from users_map import user_map
 
 
 class Upload(metaclass=ABCMeta):
@@ -78,14 +79,14 @@ def upload_video(video_dict):
     if upload_by == 'bd':
         share_url = uploader.share_item(video_dict['Title'])
         if enable_db:
-            db = Database('Video')
+            db = Database(user_map(video_dict['User']))
             db.insert(video_dict['Title'], share_url, video_dict['Date'])
     elif upload_by == 's3':
         if enable_db:
-            db = Database('Video')
+            db = Database(user_map(video_dict['User']))
             db.insert(video_dict['Title'],
                       f"gets3/{quote(video_dict['Title'])}",
                       video_dict['Date'])
     else:
         raise RuntimeError(f'Upload {video_dict["Title"]} failed')
-    bot(f"[下载提示] {video_dict['Title']} 已上传, 请查看页面")
+    bot(f"[下载提示] {video_dict['Title']} 已上传, 请查看https://matsuri.design/")

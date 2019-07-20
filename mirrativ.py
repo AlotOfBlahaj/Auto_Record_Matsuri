@@ -23,8 +23,7 @@ class Mirrativ(VideoDaemon):
         except KeyError:
             self.logger.exception('Get live info error')
 
-    @staticmethod
-    def get_hsl(is_live):
+    def get_hsl(self, is_live):
         hsl_info = get_json(f'https://www.mirrativ.com/api/live/live?live_id={is_live}')
         title = hsl_info['shares']['twitter']['card']['title']
         steaming_url = hsl_info['streaming_url_hls']
@@ -33,7 +32,8 @@ class Mirrativ(VideoDaemon):
         live_dict = {'Title': title,
                      'Ref': steaming_url,
                      'Target': target,
-                     'Date': date}
+                     'Date': date,
+                     'User': self.target_id}
         return live_dict
 
     @while_warp
