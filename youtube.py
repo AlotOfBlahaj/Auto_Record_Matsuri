@@ -66,7 +66,7 @@ class Youtube(VideoDaemon):
                     'Target': target,
                     'Thumbnails': thumbnails,
                     'User': self.target_id}
-        except KeyError:
+        except (KeyError, AssertionError):
             self.logger.exception('Get keys error')
             return False
 
@@ -92,17 +92,12 @@ class Youtube(VideoDaemon):
     @while_warp
     def check(self):
         try:
-            html = get(f'https://www.youtube.com/channel/{self.target_id}/featured')
-            if '"label":"LIVE NOW"' in html:
-                video_dict = self.get_video_info_by_html()
-                if video_dict:
-                    video_dict['Provide'] = self.module
-                    process_video(video_dict)
+            video_dict = self.get_video_info_by_html()
+            if video_dict:
+                video_dict['Provide'] = self.module
+                process_video(video_dict)
             else:
-                if 'Upcoming live streams' in html:
-                    self.logger.info(f'{self.target_id}: Found A Live Upcoming')
-                else:
-                    self.logger.info(f'{self.target_id}: Not found Live')
+                self.logger.info(f'{self.target_id}: Not found Live')
         except Exception:
             self.logger.exception('Check Failed')
 
