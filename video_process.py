@@ -1,7 +1,8 @@
-import re
 import subprocess
-from os.path import isfile
 from time import time
+
+import re
+from os.path import isfile
 
 from config import config
 from daemon import VideoUpload
@@ -13,7 +14,7 @@ def downloader(link, title, dl_proxy, ddir, user_config, quality='best'):
         is_download = user_config['download']
     except KeyError:
         is_download = True
-    if not is_download:
+    if is_download:
         logger = get_logger('Downloader')
         # co = ["streamlink", "--hls-live-restart", "--loglevel", "trace", "--force"]
         co = ["streamlink", "--hls-live-restart", "--force"]

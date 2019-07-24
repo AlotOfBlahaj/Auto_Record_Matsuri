@@ -1,6 +1,7 @@
 import json
-import re
 from time import sleep, strftime, localtime, time
+
+import re
 
 from config import config
 from daemon import VideoDaemon
@@ -55,7 +56,8 @@ class Youtube(VideoDaemon):
             player_response = json.loads(ytplayer_config['args']['player_response'])
             video_details = player_response['videoDetails']
             # assert to verity live status
-            assert video_details['isLive']
+            if 'isLive' not in video_details:
+                return False
             title = video_details['title']
             vid = video_details['videoId']
             target = f"https://www.youtube.com/watch?v={vid}"
@@ -66,7 +68,7 @@ class Youtube(VideoDaemon):
                     'Target': target,
                     'Thumbnails': thumbnails,
                     'User': self.target_id}
-        except (KeyError, AssertionError):
+        except KeyError:
             self.logger.exception('Get keys error')
             return False
 
@@ -127,7 +129,7 @@ class YoutubeTemp(Youtube):
         if r'"isLive\":true' in html:
             video_dict = self.getlive_title(self.vid)
             video_dict['Provide'] = self.module
-            process_video(video_dict,)
+            process_video(video_dict)
             self.db.delete(self.vinfo)
         else:
             self.logger.info(f'Not found Live')
