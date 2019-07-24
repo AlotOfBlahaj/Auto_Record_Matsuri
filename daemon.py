@@ -6,10 +6,11 @@ from upload import upload_video
 
 
 class VideoUpload(Process):
-    def __init__(self, video_dict):
+    def __init__(self, video_dict, user_config):
         super().__init__()
         self.logger = get_logger('VideoUpload')
         self.video_dict = video_dict
+        self.user_config = user_config
 
     def run(self) -> None:
         try:
@@ -18,13 +19,14 @@ class VideoUpload(Process):
             exit(0)
 
     def start_daemon(self):
-        upload_video(self.video_dict)
+        upload_video(self.video_dict, self.user_config)
 
 
 class VideoDaemon(Process, metaclass=ABCMeta):
-    def __init__(self, target_id):
+    def __init__(self, user_config):
         super().__init__()
-        self.target_id = target_id
+        self.user_config = user_config
+        self.target_id = user_config['target_id']
 
     def run(self) -> None:
         try:

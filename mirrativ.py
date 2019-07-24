@@ -42,5 +42,5 @@ class Mirrativ(VideoDaemon):
         if is_live:
             video_dict = self.get_hsl(is_live)
             video_dict['Provide'] = self.module
-            process_video(video_dict)
+            process_video(video_dict, self.user_config)
         self.logger.info(f'{self.target_id}: Not found Live')

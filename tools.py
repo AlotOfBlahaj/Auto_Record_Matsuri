@@ -2,7 +2,7 @@ import json
 import logging
 from functools import wraps
 from os import mkdir
-from os.path import abspath, dirname
+from os.path import abspath, dirname, isdir
 from time import strftime, localtime, time, sleep
 
 import pymongo
@@ -10,7 +10,7 @@ import requests
 from bson import ObjectId
 from retrying import retry
 
-from config import enable_bot, host, group_id, proxy, enable_proxy, sec_error, sec
+from config import config
 
 ABSPATH = dirname(abspath(__file__))
 fake_headers = {
@@ -18,15 +18,15 @@ fake_headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101 Firefox/60.0',
 }
 proxies = {
-    "http": f"http://{proxy}",
-    "https": f"http://{proxy}",
+    "http": f"http://{config['proxy']}",
+    "https": f"http://{config['proxy']}",
 }
 
 
-@retry(wait_fixed=sec_error)
+@retry(wait_fixed=config['error_sec'])
 def get(url: str, mode='text'):
     try:
-        if enable_proxy:
+        if config['enable_proxy']:
             r = requests.get(url, headers=fake_headers, proxies=proxies)
         else:
             r = requests.get(url, headers=fake_headers)
@@ -73,15 +73,15 @@ def get_logger(module):
 
 
 # 关于机器人HTTP API https://cqhttp.cc/docs/4.7/#/API
-def bot(message):
-    if enable_bot:
-        # 此处要重定义opener，否则会使用代理访问
-        # opener1 = request.build_opener()
-        # request.install_opener(opener1)
+def bot(message, user_config):
+    if config['enable_bot'] and user_config['bot_notice']:
+        try:
+            group_id = user_config['group_id']
+        except KeyError:
+            group_id = config['group_id']
         # 传入JSON时，应使用这个UA
-        headers = {'Content-Type': 'application/json'}
-        # 将消息输入dict再转为json
-        # 此处不应该直接使用HTTP GET的方式传入数据
+        headers = {'Content-Type': 'application/json',
+                   'Authorization': f'Bearer {config["bot_token"]}'}
         for _group_id in group_id:
             _msg = {
                 'group_id': int(_group_id),
@@ -90,7 +90,7 @@ def bot(message):
             }
             _msg = json.dumps(_msg)
             try:
-                requests.post(f'http://{host}/send_group_msg', data=_msg, headers=headers)
+                requests.post(f'http://{config["bot_host"]}/send_group_msg', data=_msg, headers=headers)
             except requests.exceptions.RequestException as e:
                 logger = get_logger('Bot')
                 logger.exception(e)
@@ -124,6 +124,24 @@ def while_warp(func):
     def warp(*args, **kwargs):
         while True:
             func(*args, *kwargs)
-            sleep(sec)
+            sleep(config['sec'])
 
     return warp
+
+
+def check_ddir_is_exist(ddir=config['ddir']):
+    if not isdir(ddir):
+        try:
+            mkdir(ddir)
+        except FileNotFoundError:
+            logger = get_logger('Main')
+            logger.exception('下载目录（ddir）配置错误，请选择可用的目录')
+            exit(-1)
+            
+
+def get_ddir(user_config):
+    try:
+        ddir = f'{config["ddir"]}/{user_config["ddir"]}'
+    except KeyError:
+        ddir = config['ddir']
+    return ddir

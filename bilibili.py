@@ -2,14 +2,15 @@ from multiprocessing import Process
 from time import sleep
 
 from bilibili_api.bilibili_api import BilibiliAPI
-from config import sec
+from config import config
 from tools import get_logger, bot
 
 
 class Bilibili(Process):
-    def __init__(self, mid):
+    def __init__(self, user_config):
         super().__init__()
-        self.mid = mid
+        self.user_config = user_config
+        self.mid = self.user_config['target_id']
         self.API = BilibiliAPI()
         self.logger = get_logger('Bilibili')
         self.old_video_num = None
@@ -26,7 +27,7 @@ class Bilibili(Process):
                 self.old_video_num = video_num
             else:
                 self.logger.info(f'{self.mid}:{video_num} Not found new videos')
-            sleep(sec)
+            sleep(config['sec'])
 
     def run(self) -> None:
         self.check()
