@@ -7,8 +7,8 @@ from minio import Minio
 from os import name
 from retrying import retry
 
-from config import ddir, enable_db, s3_access_key, s3_secret_key, upload_by, s3_server
-from tools import get_logger, ABSPATH, Database, bot
+from config import config
+from tools import get_logger, ABSPATH, Database, bot, get_ddir
 from users_map import user_map
 
 
@@ -21,9 +21,9 @@ class Upload(metaclass=ABCMeta):
 class S3Upload(Upload):
     def __init__(self):
         self.logger = get_logger('S3Upload')
-        self.minio = Minio(s3_server,
-                           access_key=s3_access_key,
-                           secret_key=s3_secret_key,
+        self.minio = Minio(config['s3_server'],
+                           access_key=config['s3_access_key'],
+                           secret_key=config['s3_secret_key'],
                            secure=True)
 
     def upload_item(self, item_path, item_name):
@@ -70,19 +70,20 @@ class BDUpload(Upload):
         return link
 
 
-def upload_video(video_dict):
+def upload_video(video_dict, user_config):
     upload_way_dict = {'bd': BDUpload,
                        's3': S3Upload}
-    upload_way = upload_way_dict.get(upload_by)
+    upload_way = upload_way_dict.get(config['upload_by'])
     uploader = upload_way()
+    ddir = get_ddir(user_config)
     uploader.upload_item(f"{ddir}/{video_dict['Title']}", video_dict['Title'])
-    if upload_by == 'bd':
+    if config['upload_by'] == 'bd':
         share_url = uploader.share_item(video_dict['Title'])
-        if enable_db:
+        if config['enable_mongodb']:
             db = Database(user_map(video_dict['User']))
             db.insert(video_dict['Title'], share_url, video_dict['Date'])
-    elif upload_by == 's3':
-        if enable_db:
+    elif config['upload_by'] == 's3':
+        if config['enable_mongodb']:
             db = Database(user_map(video_dict['User']))
             db.insert(video_dict['Title'],
                       f"gets3/{quote(video_dict['Title'])}",

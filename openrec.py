@@ -40,6 +40,6 @@ class Openrec(VideoDaemon):
         if is_live:
             video_dict = is_live
             video_dict['Provide'] = self.module
-            process_video(video_dict)
+            process_video(video_dict, self.user_config)
         else:
             self.logger.info(f'{self.target_id}: Not found Live')
