@@ -41,7 +41,7 @@ class Twitcasting(VideoDaemon):
             if live_info.get('Is_live'):
                 video_dict = self.get_hsl(live_info)
                 video_dict['Provide'] = self.module
-                process_video(video_dict)
+                process_video(video_dict, self.user_config)
             else:
                 self.logger.info(f'{self.target_id}: Not found Live')
         except Exception:

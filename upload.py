@@ -64,10 +64,10 @@ class BDUpload(Upload):
         link = re.search(linkre, share_info)
         try:
             link = 'https://pan.baidu.com/s/' + link.group(1)
+            return link
         except AttributeError:
             self.logger.exception('get share link error')
             raise RuntimeError('get share link error')
-        return link
 
 
 def upload_video(video_dict, user_config):
@@ -90,4 +90,4 @@ def upload_video(video_dict, user_config):
                       video_dict['Date'])
     else:
         raise RuntimeError(f'Upload {video_dict["Title"]} failed')
-    bot(f"[下载提示] {video_dict['Title']} 已上传, 请查看https://matsuri.design/")
+    bot(f"[下载提示] {video_dict['Title']} 已上传, 请查看https://matsuri.design/", user_config)
