@@ -35,7 +35,7 @@ def get(url: str, mode='text'):
         else:
             return r.text
     except requests.RequestException:
-        logger = get_logger('Requests')
+        logger = logging.getLogger('run.get')
         logger.exception('Network Error')
 
 
@@ -43,32 +43,23 @@ def get_json(url: str) -> dict:
     try:
         return json.loads(get(url))
     except json.decoder.JSONDecodeError:
-        logger = get_logger('Json')
+        logger = logging.getLogger('run.get_json')
         logger.exception('Load Json Error')
 
 
-def get_logger(module):
-    logger = logging.getLogger(module)
-    if not logger.handlers:
-        logger.setLevel(level=logging.DEBUG)
-        # 格式化
-        formatter = logging.Formatter(
-            f'%(asctime)s[%(levelname)s]: %(filename)s[line:%(lineno)d] - {module}: %(message)s')
-
-        # 输出文件
-        today = strftime('%m-%d', localtime(time()))
-        try:
-            file_handler = logging.FileHandler(f"log/log-{today}.log")
-        except FileNotFoundError:
-            mkdir('log')
-            file_handler = logging.FileHandler(f"log/log-{today}.log")
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
-
-        # 输出流
-        stream_handler = logging.StreamHandler()
-        stream_handler.setFormatter(formatter)
-        logger.addHandler(stream_handler)
+def get_logger():
+    logger = logging.getLogger('run')
+    today = strftime('%m-%d', localtime(time()))
+    stream_handler = logging.StreamHandler()
+    file_handler = logging.FileHandler(filename=f"log/log-{today}.log")
+    formatter = logging.Formatter("%(asctime)s[%(levelname)s]: %(filename)s[line:%(lineno)d] - %(name)s : %(message)s")
+    stream_handler.setFormatter(formatter)
+    file_handler.setFormatter(formatter)
+    stream_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(logging.WARNING)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(stream_handler)
+    logger.addHandler(file_handler)
     return logger
 
 
@@ -89,7 +80,7 @@ def bot(message: str, user_config: dict):
                 'auto_escape': False
             }
             msg = json.dumps(_msg)
-            logger = get_logger('Bot')
+            logger = logging.getLogger('run.bot')
             try:
                 requests.post(f'http://{config["bot_host"]}/send_group_msg', data=msg, headers=headers)
                 logger.warning(f'{msg}')
@@ -102,7 +93,7 @@ class Database:
         client = pymongo.MongoClient("mongodb://127.0.0.1:27017/")
         _db = client["Video"]
         self.db = _db[db]
-        self.logger = get_logger('Database')
+        self.logger = logging.getLogger('run.db')
 
     def select(self):
         values = self.db.find()
@@ -135,10 +126,10 @@ def check_ddir_is_exist(ddir=config['ddir']):
         try:
             mkdir(ddir)
         except FileNotFoundError:
-            logger = get_logger('Main')
+            logger = logging.getLogger('run.check_ddir')
             logger.exception('下载目录（ddir）配置错误，请选择可用的目录')
             exit(-1)
-            
+   
 
 def get_ddir(user_config):
     try:

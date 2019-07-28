@@ -1,4 +1,5 @@
 import time
+import logging
 
 from daemon import VideoDaemon
 from tools import get_logger, get_json, while_warp
@@ -8,7 +9,7 @@ from video_process import process_video
 class Twitcasting(VideoDaemon):
     def __init__(self, target_id):
         super().__init__(target_id)
-        self.logger = get_logger('Twitcasting')
+        self.logger = logging.getLogger('run.twitcasting')
         self.module = 'Twitcasting'
 
     def live_info(self):

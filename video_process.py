@@ -1,4 +1,5 @@
 import subprocess
+import logging
 from time import time
 
 import re
@@ -6,7 +7,7 @@ from os.path import isfile
 
 from config import config
 from daemon import VideoUpload
-from tools import get_logger, bot, check_ddir_is_exist, get_ddir
+from tools import bot, check_ddir_is_exist, get_ddir
 
 
 def downloader(link, title, dl_proxy, ddir, user_config, quality='best'):
@@ -15,7 +16,7 @@ def downloader(link, title, dl_proxy, ddir, user_config, quality='best'):
     except KeyError:
         is_download = True
     if is_download:
-        logger = get_logger('Downloader')
+        logger = logging.getLogger('run.downloader')
         # co = ["streamlink", "--hls-live-restart", "--loglevel", "trace", "--force"]
         co = ["streamlink", "--hls-live-restart", "--force"]
         if config['enable_proxy']:
@@ -83,10 +84,12 @@ def process_video(video_dict, user_config):
     :param user_config: 用户配置
     :return: None
     """
+    assert 'bot_notice' in user_config
+    assert 'download' in user_config
     bot(f"[直播提示] {video_dict['Provide']}{video_dict.get('Title')} 正在直播 链接: {video_dict['Target']} [CQ:at,qq=all]", user_config)
     ddir = get_ddir(user_config)
     check_ddir_is_exist(ddir)
-    logger = get_logger('Process Video')
+    logger = logging.getLogger('run.precess_video')
     logger.info(f'{video_dict["Provide"]} Found A Live, starting downloader')
     video_dict['Title'] = AdjustFileName(video_dict['Title']).adjust(ddir)
     if video_dict["Provide"] == 'Youtube':

@@ -1,9 +1,10 @@
+import logging
 from multiprocessing import Process
 from time import sleep
 
 from bilibili_api.bilibili_api import BilibiliAPI
 from config import config
-from tools import get_logger, bot
+from tools import bot
 
 
 class Bilibili(Process):
@@ -12,7 +13,7 @@ class Bilibili(Process):
         self.user_config = user_config
         self.mid = self.user_config['target_id']
         self.API = BilibiliAPI()
-        self.logger = get_logger('Bilibili')
+        self.logger = logging.getLogger('run.bilibili')
         self.old_video_num = None
 
     def check(self):

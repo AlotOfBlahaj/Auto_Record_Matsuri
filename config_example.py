@@ -17,12 +17,13 @@ config = {
     'youtube': {
         'enable': True,
         'enable_temp': False,
+        'enable_temp_bot_notice': True,
+        'enable_temp_download': True,
         'quality': '720p',
         'api_key': '',
         'users': [
             {
                 'target_id': 'UCQ0UDLQCjY0rmuxCDE38FGg',
-                'ddir': '',
                 'bot_notice': True,
                 'download': True
             },
@@ -39,8 +40,8 @@ config = {
         'users': [
             {
                 'target_id': 'natsuiromatsuri',
-                'ddir': '',
-                'bot_notice': True
+                'bot_notice': True,
+                'download': True
             }
         ]
     },
@@ -49,8 +50,8 @@ config = {
         'users': [
             {
                 'target_id': '3264432',
-                'ddir': '',
-                'bot_notice': True
+                'bot_notice': True,
+                'download': True
             }
         ]
     },
@@ -59,8 +60,8 @@ config = {
         'users': [
             {
                 'target_id': 'natsuiromatsuri',
-                'ddir': '',
-                'bot_notice': True
+                'bot_notice': True,
+                'download': True
             }
         ]
     },
@@ -69,8 +70,8 @@ config = {
         'users': [
             {
                 'target_id': '336731767',
-                'ddir': '',
-                'bot_notice': True
+                'bot_notice': True,
+                'download': True
             }
         ]
     }

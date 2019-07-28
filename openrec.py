@@ -1,4 +1,5 @@
 import time
+import logging
 
 from lxml.html import etree
 
@@ -10,7 +11,7 @@ from video_process import process_video
 class Openrec(VideoDaemon):
     def __init__(self, target_id):
         super().__init__(target_id)
-        self.logger = get_logger('Openrec')
+        self.logger = logging.getLogger('run.openrec')
         self.module = 'Openrec'
 
     def is_live(self):
