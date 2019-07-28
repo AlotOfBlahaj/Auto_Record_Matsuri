@@ -9,7 +9,6 @@ from upload import upload_video
 class VideoUpload(Process):
     def __init__(self, video_dict, user_config):
         super().__init__()
-        self.logger = get_logger('VideoUpload')
         self.video_dict = video_dict
         self.user_config = user_config
 

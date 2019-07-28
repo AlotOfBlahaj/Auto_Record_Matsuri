@@ -1,7 +1,8 @@
 import time
+import logging
 
 from daemon import VideoDaemon
-from tools import get_json, get_logger, while_warp
+from tools import get_json, while_warp
 from video_process import process_video
 
 
@@ -9,7 +10,7 @@ class Mirrativ(VideoDaemon):
 
     def __init__(self, target_id):
         super().__init__(target_id)
-        self.logger = get_logger('Mirrativ')
+        self.logger = logging.getLogger('run.mirrativ')
         self.module = 'Mirrativ'
 
     def get_live_info(self):

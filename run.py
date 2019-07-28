@@ -4,15 +4,19 @@ from bilibili import Bilibili
 from config import config
 from mirrativ import Mirrativ
 from openrec import Openrec
-from tools import check_ddir_is_exist
+from tools import check_ddir_is_exist, get_logger
 from twitcasting import Twitcasting
 from youtube import Youtube, start_temp_daemon
+
+
+logger = get_logger()
 
 
 class Event:
     def __init__(self):
         self.events_multi = []
         self.gen_process()
+        logger.info(self.events_multi)
 
     def start(self):
         self.start_multi_task()
