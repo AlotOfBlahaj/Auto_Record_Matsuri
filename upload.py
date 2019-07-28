@@ -1,4 +1,5 @@
 import subprocess
+import logging
 from urllib.parse import quote
 
 import re
@@ -20,7 +21,7 @@ class Upload(metaclass=ABCMeta):
 
 class S3Upload(Upload):
     def __init__(self):
-        self.logger = get_logger('S3Upload')
+        self.logger = logging.getLogger('run.s3upload')
         self.minio = Minio(config['s3_server'],
                            access_key=config['s3_access_key'],
                            secret_key=config['s3_secret_key'],
@@ -32,7 +33,7 @@ class S3Upload(Upload):
 
 class BDUpload(Upload):
     def __init__(self):
-        self.logger = get_logger('BDUpload')
+        self.logger = logging.getLogger('run.bdupload')
 
     def upload_item(self, item_path: str, item_name: str) -> None:
         if 'nt' in name:
