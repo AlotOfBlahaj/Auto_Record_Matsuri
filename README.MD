@@ -5,7 +5,9 @@ Auto_Record_Matsuri [![Build Status](https://travis-ci.org/fzxiao233/Auto_Record
 
 特性
 ----
-- 使用多进程，同时监控多个Vtuber占用较低（DD）
+- 使用多线程进行监控
+
+- 通过多进程启动下载和上传任务
 
     
 功能
@@ -20,7 +22,7 @@ Auto_Record_Matsuri [![Build Status](https://travis-ci.org/fzxiao233/Auto_Record
 
 使用
 ------
-- 请务必在启动前编辑config.py文件
+- 请务必在启动前编辑config.py文件(详细配置方法见下文)
 
 - 首次启动或更新时
 
@@ -35,4 +37,92 @@ Auto_Record_Matsuri [![Build Status](https://travis-ci.org/fzxiao233/Auto_Record
 
 支持
 ------
+
+### 配置方法
+
+- 复制config_example.py文件为config.py
+
+- 参照下列注释编辑文件
+
+		config = {
+			'enable_proxy': False, # 是否使用代理检测
+			'proxy': '', # 代理服务地址，应使用http代理
+			'ddir': '/home/ubuntu/Matsuri', # 主存储目录，下文可以设置子目录
+			'sec': 15, # 检测间隔时间 单位秒
+			'error_sec': 5, # 错误重试时间 单位秒
+			'enable_bot': False, # 是否启动bot通知
+			'bot_host': '', # bot的HTTPAPI地址
+			'group_id': [], # bot需要通知的群号
+			'bot_token': '', # bot的Token验证
+			'enable_upload': True, # 是否启动上传功能
+			'upload_by': 'bd', # 上传通过 bd：百度云 s3： 任意兼容s3api的云存储
+			'enable_mongodb': False, # 是否启动mongodb用于记录（youtube_temp模块依赖项
+			's3_server': '', # s3服务器地址
+			's3_access_key': '',
+			's3_secret_key': '',
+			# Youtube模块
+			'youtube': {
+				'enable': True, # 是否启用模块
+				'enable_temp': False, # 是否启用补充功能
+				'enable_temp_bot_notice': True, # 补充功能是否发送bot通知
+				'enable_temp_download': True, # 补充功能是否下载视频
+				'quality': '720p', # 默认下载画质
+				'api_key': '', # Youtube API key 不填入也可使用
+				# 监控对象
+				'users': [
+					{
+						'target_id': 'UCQ0UDLQCjY0rmuxCDE38FGg', # 频道号
+						'bot_notice': True, # 是否启用bot通知
+						'download': True # 是否下载
+					},
+					{
+						'target_id': 'UCl_gCybOJRIgOXw6Qb4qJzQ',
+						'ddir': 'rushia',
+						'bot_notice': False,
+						'download': True
+					}
+				]
+			},
+			'twitcasting': {
+				'enable': True,
+				'users': [
+					{
+						'target_id': 'natsuiromatsuri',
+						'bot_notice': True,
+						'download': True
+					}
+				]
+			},
+			'mirrativ': {
+				'enable': True,
+				'users': [
+					{
+						'target_id': '3264432',
+						'bot_notice': True,
+						'download': True
+					}
+				]
+			},
+			'openrec': {
+				'enable': True,
+				'users': [
+					{
+						'target_id': 'natsuiromatsuri',
+						'bot_notice': True,
+						'download': True
+					}
+				]
+			},
+			'bilibili': {
+				'enable': True,
+				'users': [
+					{
+						'target_id': '336731767',
+						'bot_notice': True,
+						'download': True
+					}
+				]
+			}
+		}
+
 - 有问题或者新功能请求请发Issues
