@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from multiprocessing import Process
+from threading import Thread
 
 from tools import get_logger
 from upload import upload_video
@@ -22,7 +23,7 @@ class VideoUpload(Process):
         upload_video(self.video_dict, self.user_config)
 
 
-class VideoDaemon(Process, metaclass=ABCMeta):
+class VideoDaemon(Thread, metaclass=ABCMeta):
     def __init__(self, user_config):
         super().__init__()
         self.user_config = user_config

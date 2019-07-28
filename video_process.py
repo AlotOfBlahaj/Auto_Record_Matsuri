@@ -76,10 +76,11 @@ class AdjustFileName:
         return self.filename
 
 
-def process_video(video_dict, user_config=config):
+def process_video(video_dict, user_config):
     """
     处理直播视频，包含bot的发送，视频下载，视频上传和存入数据库
     :param video_dict: 含有直播视频数据的dict
+    :param user_config: 用户配置
     :return: None
     """
     bot(f"[直播提示] {video_dict['Provide']}{video_dict.get('Title')} 正在直播 链接: {video_dict['Target']} [CQ:at,qq=all]", user_config)
@@ -89,7 +90,7 @@ def process_video(video_dict, user_config=config):
     logger.info(f'{video_dict["Provide"]} Found A Live, starting downloader')
     video_dict['Title'] = AdjustFileName(video_dict['Title']).adjust(ddir)
     if video_dict["Provide"] == 'Youtube':
-        downloader(r"https://www.youtube.com/watch?v=" + video_dict['Ref'], video_dict['Title'], config['proxy'], ddir, user_config,config['youtube']['quality'])
+        downloader(r"https://www.youtube.com/watch?v=" + video_dict['Ref'], video_dict['Title'], config['proxy'], ddir, user_config, config['youtube']['quality'])
     else:
         downloader(video_dict['Ref'], video_dict['Title'], ddir, user_config, config['proxy'])
     if config['enable_upload']:

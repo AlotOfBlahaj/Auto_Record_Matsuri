@@ -14,36 +14,8 @@ class Youtube(VideoDaemon):
     def __init__(self, user_config):
         super().__init__(user_config)
         self.module = 'Youtube'
-        # 品质设置
         self.api_key = config['youtube']['api_key']
-        self.database = Database('Queues')
         self.logger = get_logger('Youtube')
-
-    # 关于SearchAPI的文档 https://developers.google.com/youtube/v3/docs/search/list
-    # def get_videoid_by_channel_id(self, channel_id: str):
-    #     # This method has been given up
-    #     channel_info = get_json(rf'https://www.googleapis.com/youtube/v3/search?part=snippet&'
-    #                             rf'channelId={channel_id}&eventType=live&maxResults=1&type=video&'
-    #                             rf'key={self.api_key}')
-    #     # assert json data
-    #     try:
-    #         item = channel_info['items'][0]
-    #     except KeyError:
-    #         self.logger.exception('Get vid error')
-    #         raise RuntimeError
-    #     title = item['snippet']['title']
-    #     title = title.replace("/", " ")
-    #     vid = item['id']['videoId']
-    #     date = item['snippet']['publishedAt']
-    #     date = date[0:10]
-    #     target = f"https://www.youtube.com/watch?v={vid}"
-    #     thumbnails = item['snippet']['thumbnails']['high']['url']
-    #     return {'Title': title,
-    #             'Ref': vid,
-    #             'Date': date,
-    #             'Target': target,
-    #             'Thumbnails': thumbnails,
-    #             'User': self.target_id}
 
     def get_video_info_by_html(self):
         """

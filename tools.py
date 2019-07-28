@@ -73,7 +73,7 @@ def get_logger(module):
 
 
 # 关于机器人HTTP API https://cqhttp.cc/docs/4.7/#/API
-def bot(message, user_config):
+def bot(message: str, user_config: dict):
     if config['enable_bot'] and user_config['bot_notice']:
         try:
             group_id = user_config['group_id']
@@ -88,11 +88,12 @@ def bot(message, user_config):
                 'message': message,
                 'auto_escape': False
             }
-            _msg = json.dumps(_msg)
+            msg = json.dumps(_msg)
+            logger = get_logger('Bot')
             try:
-                requests.post(f'http://{config["bot_host"]}/send_group_msg', data=_msg, headers=headers)
+                requests.post(f'http://{config["bot_host"]}/send_group_msg', data=msg, headers=headers)
+                logger.warning(f'{msg}')
             except requests.exceptions.RequestException as e:
-                logger = get_logger('Bot')
                 logger.exception(e)
 
 
@@ -141,7 +142,10 @@ def check_ddir_is_exist(ddir=config['ddir']):
 
 def get_ddir(user_config):
     try:
-        ddir = f'{config["ddir"]}/{user_config["ddir"]}'
+        if user_config['ddir'] != config['ddir']:
+            ddir = f'{config["ddir"]}/{user_config["ddir"]}'
+        else:
+            ddir = config['ddir']
     except KeyError:
         ddir = config['ddir']
     return ddir
