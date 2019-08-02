@@ -1,9 +1,8 @@
-import subprocess
 import logging
-from time import time
-
 import re
+import subprocess
 from os.path import isfile
+from time import time
 
 from config import config
 from daemon import VideoUpload
@@ -95,7 +94,7 @@ def process_video(video_dict, user_config):
     if video_dict["Provide"] == 'Youtube':
         downloader(r"https://www.youtube.com/watch?v=" + video_dict['Ref'], video_dict['Title'], config['proxy'], ddir, user_config, config['youtube']['quality'])
     else:
-        downloader(video_dict['Ref'], video_dict['Title'], ddir, user_config, config['proxy'])
+        downloader(video_dict['Ref'], video_dict['Title'], config['proxy'], ddir, user_config)
     if config['enable_upload']:
         v = VideoUpload(video_dict, user_config)
         v.start()
